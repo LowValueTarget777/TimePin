@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="frost">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#DCE7F4" />
+    <title>TimePin · 登录与注册</title>
+    <link rel="icon" href="/mark.svg" />
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/appearance.css" />
+    <script src="/login.js" type="module"></script>
+  </head>
+  <body>
+    <div id="auth" hidden>
+      <main class="welcome">
+        <section class="login-pane">
+          <div class="brand"><img src="/mark.svg" alt="" />TimePin</div>
+          <div class="login-inner">
+            <h1 id="auth-title">登录日历</h1>
+            <p id="auth-hint"></p>
+            <form id="auth-form">
+              <label
+                >账号名<input
+                  name="name"
+                  autocomplete="username"
+                  required
+                  maxlength="80" /></label
+              ><label
+                >密码<input
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                  maxlength="256" /></label
+              ><label id="invite-field" hidden
+                >邀请链接或邀请码<input name="invite" autocomplete="off"
+              /></label>
+              <label id="recovery-field" hidden
+                >恢复码<input
+                  name="recoveryCode"
+                  maxlength="64"
+                  autocomplete="off"
+              /></label>
+              <button class="primary" id="auth-submit">登录</button>
+            </form>
+            <button class="link" id="auth-mode" type="button"></button>
+            <button class="link" id="auth-recovery" type="button">
+              使用恢复码
+            </button>
+          </div>
+        </section>
+        <aside class="paper">
+          <div class="paper-sheet">
+            <div class="paper-month" id="paper-month"></div>
+            <div class="paper-grid" id="paper-grid"></div>
+          </div>
+        </aside>
+      </main>
+    </div>
+    <dialog id="dialog">
+      <div class="dialog-head">
+        <h2 id="dialog-title"></h2>
+        <button id="dialog-close" aria-label="关闭">×</button>
+      </div>
+      <div id="dialog-content"></div>
+    </dialog>
+    <p id="notice" role="status" hidden></p>
+  </body>
+</html>

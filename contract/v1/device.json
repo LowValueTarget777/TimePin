@@ -1,0 +1,312 @@
+{
+  "drafts.list": {
+    "type":"object","description":"分页读取当前手机、登录账号与实例的待处理草稿目录，含已撤权日历。每页最多 30 条，next 用作下一页的 after。离线可用。",
+    "properties":{"after":{"type":"integer","minimum":0}},"required":[],"additionalProperties":false
+  },
+  "drafts.detail": {
+    "type":"object","description":"按 seq 取回本人保存在手机的命令文本 input。使用返回的 nextOffset 原样续读并拼接。已撤权的日历只返回本机输入。",
+    "properties":{"seq":{"type":"integer","minimum":1},"offset":{"type":"integer","minimum":0,"maximum":2147483647}},"required":["seq"],"additionalProperties":false
+  },
+  "server.detail": {
+    "type":"object","description":"读取本机选择的服务器与账号登录状态。",
+    "properties":{},"required":[],"additionalProperties":false
+  },
+  "server.connect": {
+    "type":"object","description":"匿名验证并保存手机选定的 TimePin 地址，可显式输入公网 HTTP。已登录时先比对同一实例的随机校验值，再切换传输地址，保留账号、本地日历和组件。",
+    "properties":{"url":{"type":"string","minLength":1,"maxLength":2048}},"required":["url"],"additionalProperties":false
+  },
+  "background.detail": {
+    "type": "object", "description": "读取安卓设备的背景。省略 widgetId 表示应用，返回 mode、color 和 hasPhoto。",
+    "properties": {"widgetId": {"type": "integer", "minimum": 1}}, "required": [], "additionalProperties": false
+  },
+  "background.update": {
+    "type": "object", "description": "设置安卓应用或指定组件背景。frost 为雾光，solid 为纯色，photo 重用该位置已选择的照片，follow 仅用于组件。",
+    "properties": {"widgetId": {"type": "integer", "minimum": 1}, "mode": {"enum": ["follow","frost","solid","photo"]}, "color": {"type":"string","pattern":"^#[0-9A-Fa-f]{6}$"}},
+    "required": ["mode"], "additionalProperties": false
+  },
+  "background.photo": {
+    "type": "object", "description": "导入设备私有照片并设为背景。image 为长边不超过 1280 像素的图片 Base64。",
+    "properties": {"widgetId": {"type":"integer","minimum":1}, "image":{"type":"string","minLength":1,"maxLength":524288}},
+    "required": ["image"], "additionalProperties": false
+  },
+  "display.detail": {
+    "type": "object",
+    "description": "读取手机月历设置",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "display.update": {
+    "type": "object",
+    "description": "修改指定的手机月历设置，holidayRegion 为 system、off 或国家地区代码",
+    "properties": {
+      "weekStart": {
+        "enum": [
+          "sunday",
+          "monday"
+        ]
+      },
+      "weekNumbers": {
+        "type": "boolean"
+      },
+      "lunarFormat": { "enum": ["text", "numeric"] },
+      "lunar": {
+        "type": "boolean"
+      },
+      "holidayRegion": {
+        "type": "string"
+      },
+      "fontSize": {
+        "type": "integer",
+        "minimum": 12,
+        "maximum": 18
+      }
+    },
+    "required": [],
+    "additionalProperties": false
+  },
+  "reminders.detail": {
+    "type": "object",
+    "description": "读取本机通知设置和可选日历",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "reminders.update": {
+    "type": "object",
+    "description": "修改本机日程提醒；muted 是关闭提醒的日历编号列表",
+    "properties": {
+      "enabled": {
+        "type": "boolean"
+      },
+      "minutes": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10080
+      },
+      "muted": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "uniqueItems": true
+      }
+    },
+    "required": [],
+    "additionalProperties": false
+  },
+  "system.list": {
+    "type": "object",
+    "description": "发现安卓系统日历，需用户先授予读取权限",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "system.import": {
+    "type": "object",
+    "description": "复制指定系统日历的日程到本机，起始日期包含，截止日期不包含",
+    "properties": {
+      "sourceId": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "from": {
+        "type": "string"
+      },
+      "until": {
+        "type": "string"
+      },
+      "updateShared": {
+        "type": "boolean",
+        "description": "更新已发布到当前实例的同一本日历时明确设为 true"
+      }
+    },
+    "required": [
+      "sourceId",
+      "from",
+      "until"
+    ],
+    "additionalProperties": false
+  },
+  "calendar.delete": {
+    "type": "object",
+    "description": "删除指定的本机或已连接日历。已连接日历要求实例所有者权限并同时删除共享数据。",
+    "properties": {
+      "calendarId": {
+        "type": "string"
+      },
+      "operationId": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "calendarId",
+      "operationId"
+    ],
+    "additionalProperties": false
+  },
+  "system.autoImport.detail": {
+    "type": "object",
+    "description": "读取本机自动导入开关和系统读取权限",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "system.autoImport.update": {
+    "type": "object",
+    "description": "设置本机自动导入系统日历的开关。系统读取权限由用户在手机上授予。",
+    "properties": {
+      "enabled": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "enabled"
+    ],
+    "additionalProperties": false
+  },
+  "widgets.detail": {
+    "description": "列出本机已添加的月历和近期日程组件及选中的日历",
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "widgets.update": {
+    "description": "设置指定桌面组件所显示的日历",
+    "type": "object",
+    "properties": {
+      "widgetId": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "calendarIds": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uniqueItems": true
+      }
+    },
+    "required": [
+      "widgetId",
+      "calendarIds"
+    ],
+    "additionalProperties": false
+  },
+  "sync.detail": {
+    "description": "读取一本本机日历的同步状态、队首冲突及待提交数量",
+    "type": "object",
+    "properties": {
+      "calendarId": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "calendarId"
+    ],
+    "additionalProperties": false
+  },
+  "sync.run": {
+    "description": "立即同步指定日历及待提交队列",
+    "type": "object",
+    "properties": {
+      "calendarId": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "calendarId"
+    ],
+    "additionalProperties": false
+  },
+  "sync.resolve": {
+    "description": "处理已核对版本的冲突。remote 放弃该日历队列中的所有草稿并重建；local 仅重试唯一的冲突改班",
+    "type": "object",
+    "properties": {
+      "calendarId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "revision": {
+        "type": "string",
+        "minLength": 1
+      },
+      "choice": {
+        "type": "string",
+        "enum": [
+          "remote",
+          "local"
+        ]
+      },
+      "operationId": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "calendarId",
+      "revision",
+      "choice",
+      "operationId"
+    ],
+    "additionalProperties": false
+  },
+  "calendar.update": {
+    "type": "object",
+    "description": "修改指定日历的名称与默认颜色。已连接日历由实例复核管理权限。",
+    "properties": {
+      "calendarId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "operationId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "color": {
+        "type": "string",
+        "pattern": "^#[0-9A-Fa-f]{6}$"
+      }
+    },
+    "required": [
+      "calendarId",
+      "operationId",
+      "name",
+      "color"
+    ],
+    "additionalProperties": false
+  },
+  "calendar.visibility": {
+    "type": "object",
+    "description": "设置指定日历在本机月视图和日程中的显示状态。",
+    "properties": {
+      "calendarId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "operationId": {
+        "type": "string",
+        "minLength": 1
+      },
+      "enabled": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "calendarId",
+      "operationId",
+      "enabled"
+    ],
+    "additionalProperties": false
+  }
+}

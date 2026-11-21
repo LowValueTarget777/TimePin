@@ -1,0 +1,169 @@
+{
+  "calendar": {"id": "work", "ownerKind": "group", "ownerId": "team", "color": "#336699"},
+  "actors": {
+    "alice": {"id": "alice", "role": "editor"},
+    "read": {"id": "bob", "role": "reader"},
+    "bob": {"id": "bob", "role": "contributor"}
+  },
+  "steps": [
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-holiday",
+        "eventId": "holiday",
+        "event": {"title": "休息日", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}}
+      },
+      "expect": {"code": "ok", "record": {"creatorId": "alice", "version": 1}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-night",
+        "eventId": "night",
+        "event": {
+          "title": "夜班",
+          "span": {
+            "kind": "timed",
+            "start": "2026-10-31T22:00:00+08:00",
+            "end": "2026-11-01T06:00:00+08:00",
+            "zone": "Asia/Shanghai"
+          },
+          "color": "#aa3388",
+          "participants": ["bob"]
+        }
+      },
+      "expect": {"code": "ok", "record": {"creatorId": "alice", "event": {"participants": ["bob"], "color": "#AA3388"}}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-ends-at-midnight",
+        "eventId": "ends-at-midnight",
+        "event": {
+          "title": "前一天",
+          "span": {
+            "kind": "timed",
+            "start": "2026-10-31T23:00:00+08:00",
+            "end": "2026-11-01T00:00:00+08:00",
+            "zone": "Asia/Shanghai"
+          }
+        }
+      },
+      "expect": {"code": "ok", "record": {}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-starts-at-limit",
+        "eventId": "starts-at-limit",
+        "event": {"title": "后一天", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+      },
+      "expect": {"code": "ok", "record": {}}
+    },
+    {
+      "as": "read",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-11-01", "end": "2026-11-02", "zone": "Asia/Shanghai"}
+      },
+      "expect": {
+        "code": "ok",
+        "occurrences": [
+          {
+            "eventId": "night",
+            "span": {
+              "kind": "timed",
+              "start": "2026-10-31T22:00:00+08:00",
+              "end": "2026-11-01T06:00:00+08:00",
+              "zone": "Asia/Shanghai"
+            },
+            "color": "#AA3388"
+          },
+          {
+            "eventId": "holiday",
+            "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"},
+            "color": "#336699"
+          }
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-11-01", "end": "2026-11-02", "zone": "America/New_York"}
+      },
+      "expect": {
+        "code": "ok",
+        "occurrences": [{"eventId": "holiday", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}}]
+      }
+    },
+    {
+      "as": "bob",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-11-01", "end": "2026-11-02", "zone": "Asia/Shanghai", "participantId": "bob"}
+      },
+      "expect": {"code": "ok", "occurrences": [{"eventId": "night"}]}
+    },
+    {
+      "as": "bob",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "operationId": "claim",
+        "eventId": "night",
+        "baseVersion": 1,
+        "event": {
+          "title": "夜班",
+          "span": {
+            "kind": "timed",
+            "start": "2026-10-31T22:00:00+08:00",
+            "end": "2026-11-01T06:00:00+08:00",
+            "zone": "Asia/Shanghai"
+          },
+          "color": "#aa3388",
+          "participants": ["bob"]
+        }
+      },
+      "expect": {"code": "forbidden"}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-forged",
+        "eventId": "forged",
+        "event": {"title": "休息日", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}},
+        "creatorId": "bob"
+      },
+      "expect": {"code": "invalid"}
+    },
+    {
+      "as": "read",
+      "command": {"v": 1, "op": "event.get", "calendarId": "work", "eventId": "night"},
+      "expect": {"code": "ok", "record": {"id": "night", "creatorId": "alice", "calendarId": "work"}}
+    }
+  ]
+}

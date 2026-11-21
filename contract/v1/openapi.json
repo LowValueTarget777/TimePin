@@ -1,0 +1,4729 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "TimePin 公共 API",
+    "version": "1.10.0",
+    "description": "实例可将全部 /admin 管理 API 限于局域网直连。连接来源不符时返回 HTTP 403 和 JSON error 字段。个人账号及同步操作沿用各自的认证方式。"
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/ai/actions": {
+      "get": {
+        "operationId": "ai.actionTools",
+        "summary": "查询账号或设备对话工具",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回 tools 数组及函数参数 Schema",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tools": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "type",
+                          "function"
+                        ],
+                        "properties": {
+                          "type": {
+                            "const": "function"
+                          },
+                          "function": {
+                            "type": "object",
+                            "required": [
+                              "name",
+                              "description",
+                              "parameters"
+                            ],
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "parameters": {
+                                "type": "object"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "tools"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "account",
+                "device"
+              ]
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ai.actionPlan",
+        "summary": "使用已授权实例模型生成账号或设备提案",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回 text 和可选 proposal；可使用 SSE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    },
+                    "proposal": {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "enum": [
+                            "calendar.create",
+                            "group.create",
+                            "invite.accept",
+                            "widgets.update",
+                            "background.update",
+                            "sync.run",
+                            "sync.resolve"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "op"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "text"
+                  ]
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "account",
+                      "device"
+                    ]
+                  },
+                  "message": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8000
+                  },
+                  "context": {
+                    "type": "object"
+                  },
+                  "history": {
+                    "type": "array",
+                    "maxItems": 8,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "assistant"
+                          ]
+                        },
+                        "content": {
+                          "type": "string",
+                          "maxLength": 8000
+                        }
+                      },
+                      "required": [
+                        "role",
+                        "content"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "scope",
+                  "message",
+                  "context"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/account/confirm": {
+      "post": {
+        "operationId": "ai.accountConfirm",
+        "summary": "以当前账号确认账号操作",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回对应管理操作回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "enum": [
+                        "calendar",
+                        "group"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "personal",
+                      "server"
+                    ]
+                  },
+                  "command": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/calendar_create"
+                      },
+                      {
+                        "$ref": "#/components/schemas/group_create"
+                      },
+                      {
+                        "$ref": "#/components/schemas/invite_accept"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "userId",
+                  "source",
+                  "command"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sync/pull": {
+      "post": {
+        "operationId": "sync.pull",
+        "summary": "按日历建立副本、续传变更或接收撤权通知",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "calendarId": {
+                    "$ref": "schema.json#/$defs/id"
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{64}$"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 512,
+                    "default": 128
+                  },
+                  "sources": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "required": [
+                  "calendarId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "一页变化，或清除共享副本的撤权通知",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "const": "ok"
+                        },
+                        "calendar": {
+                          "$ref": "#/components/schemas/Calendar"
+                        },
+                        "changes": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "allOf": [
+                                  {
+                                    "$ref": "schema.json#/$defs/record"
+                                  },
+                                  {
+                                    "properties": {
+                                      "deleted": {
+                                        "const": false
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "$ref": "schema.json#/$defs/id"
+                                  },
+                                  "version": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "deleted": {
+                                    "const": true
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "version",
+                                  "deleted"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          }
+                        },
+                        "cursor": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_-]{64}$"
+                        },
+                        "more": {
+                          "type": "boolean"
+                        },
+                        "sources": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "integer",
+                            "minimum": -1
+                          }
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "changes",
+                        "cursor",
+                        "more"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "const": "revoked"
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要重新认证",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "没有访问权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "需要重新建立副本",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/state": {
+      "get": {
+        "operationId": "state",
+        "summary": "账号、可见日历、组与模型授权",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "bearer": []
+          },
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "type": "null"
+                        },
+                        "firstAccount": {
+                          "type": "boolean"
+                        },
+                        "canRegister": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "user",
+                        "firstAccount",
+                        "canRegister"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        },
+                        "calendars": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Calendar"
+                          }
+                        },
+                        "groups": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Group"
+                          }
+                        },
+                        "ai": {
+                          "$ref": "#/components/schemas/AIStatus"
+                        },
+                        "profile": {
+                          "$ref": "#/components/schemas/ProfileSummary"
+                        }
+                      },
+                      "required": [
+                        "user",
+                        "calendars",
+                        "groups",
+                        "ai"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "operationId": "register",
+        "summary": "注册并建立会话",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "invite": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "operationId": "login",
+        "summary": "登录并建立会话",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "profile": {
+                      "$ref": "#/components/schemas/PersonalProfile"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "profile"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "operationId": "logout",
+        "summary": "退出会话",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OK"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/password": {
+      "post": {
+        "operationId": "password",
+        "summary": "修改密码并轮换会话",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "old": {
+                    "type": "string"
+                  },
+                  "new": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "old",
+                  "new"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OK"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/commands": {
+      "post": {
+        "operationId": "commands",
+        "summary": "执行版本化日历命令",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schema.json#/$defs/request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schema.json#/$defs/reply"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/manage": {
+      "post": {
+        "operationId": "manage",
+        "summary": "执行共享、令牌或模型授权操作",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Management"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ID"
+                    },
+                    {
+                      "$ref": "#/components/schemas/OK"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Detail"
+                    },
+                    {
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/OK"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "token": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "token"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "token": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "token"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/MonthDisplay"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Token"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batches": {
+      "get": {
+        "operationId": "batches",
+        "summary": "按倒序查询最多 50 个导入批次",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "calendarId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Batch"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/{token}": {
+      "get": {
+        "operationId": "publicCalendar",
+        "summary": "读取访客日历窗口",
+        "security": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "zone",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "color": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "$ref": "schema.json#/$defs/reply"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "color",
+                    "result"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/chat": {
+      "post": {
+        "operationId": "aiChat",
+        "summary": "按成员授权调用实例模型",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatReply"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "请求 Accept: text/event-stream。status 和 delta 的 data 是 JSON 字符串，result 是终态 ChatReply，error 是终态错误消息。"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/confirm": {
+      "post": {
+        "operationId": "aiConfirm",
+        "summary": "确认已有对话的批量提案",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "operationId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "operationId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatReply"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/changes": {
+      "get": {
+        "operationId": "changes",
+        "summary": "获取当前账号可见日历的变更摘要",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "获取当前账号可见日历的变更摘要"
+          }
+        }
+      }
+    },
+    "/instance": {
+      "get": {
+        "operationId": "instance",
+        "summary": "验证日历服务器标识",
+        "parameters": [
+          {
+            "name": "challenge",
+            "in": "query",
+            "description": "比较两个入口时由客户端生成的一次性随机值。",
+            "schema": {"type": "string", "pattern": "^[0-9a-fA-F]{32}$"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "验证日历服务器标识",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "proof": {
+                      "type": "string", "pattern": "^[0-9a-f]{64}$",
+                      "description": "仅带 challenge 时返回。同一实例对相同随机值返回同一结果。"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "service": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "author": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/tools": {
+      "get": {
+        "operationId": "ai.tools",
+        "summary": "读取所选日历授权的个人模型工具",
+        "parameters": [
+          {
+            "name": "calendarId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "读取所选日历授权的个人模型工具"
+          }
+        }
+      },
+      "post": {
+        "operationId": "ai.scopeTools",
+        "summary": "读取所选日历可用工具和目标编号",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "calendarIds": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "schema.json#/$defs/id"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "calendarIds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "读取所选日历可用工具和目标编号"
+          }
+        }
+      }
+    },
+    "/admin/login": {
+      "post": {
+        "operationId": "admin.login",
+        "summary": "独立后台账号登录",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "403": {
+            "description": "后台网络策略拒绝此连接",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/logout": {
+      "post": {
+        "operationId": "admin.logout",
+        "summary": "退出后台会话",
+        "security": [
+          {
+            "console": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "403": {
+            "description": "后台网络策略拒绝此连接",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OK"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/state": {
+      "get": {
+        "operationId": "admin.state",
+        "summary": "当前后台身份",
+        "security": [
+          {
+            "console": []
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "后台网络策略拒绝此连接",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/manage": {
+      "post": {
+        "operationId": "admin.manage",
+        "summary": "使用后台会话管理实例与成员授权",
+        "security": [
+          {
+            "console": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsoleManagement"
+              }
+            }
+          }
+        },
+        "responses": {
+          "403": {
+            "description": "后台网络策略拒绝此连接",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/OK"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "users",
+                        "model",
+                        "registration"
+                      ],
+                      "properties": {
+                        "users": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "name",
+                              "enabled",
+                              "ai"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "enabled": {
+                                "type": "boolean"
+                              },
+                              "ai": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        },
+                        "model": {
+                          "type": "object",
+                          "required": [
+                            "enabled",
+                            "baseUrl",
+                            "model",
+                            "hasKey"
+                          ],
+                          "properties": {
+                            "enabled": {
+                              "type": "boolean"
+                            },
+                            "baseUrl": {
+                              "type": "string"
+                            },
+                            "model": {
+                              "type": "string"
+                            },
+                            "hasKey": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        "registration": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ConsoleOverview"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ConsoleDirectoryItem"
+                          }
+                        },
+                        "more": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "more"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "entries": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ConsoleAuditEntry"
+                          }
+                        },
+                        "more": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "entries",
+                        "more"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "expires": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "expires"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "$ref": "#/components/schemas/ID"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ConsoleBackup"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "backups": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ConsoleBackup"
+                          }
+                        },
+                        "more": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "backups",
+                        "more"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recover": {
+      "post": {
+        "operationId": "recover",
+        "summary": "用账号及一次性恢复码重设密码，撤销旧会话和日历令牌",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "name",
+                  "token",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或日历领域回执",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OK"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "HTTP 错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/query": {
+      "post": {
+        "operationId": "ai.scopeQuery",
+        "summary": "按所选日历分组查询日程，不调用模型",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "calendarIds": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "schema.json#/$defs/id"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                  },
+                  "window": {
+                    "$ref": "schema.json#/$defs/window"
+                  }
+                },
+                "required": [
+                  "calendarIds",
+                  "window"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "按所选日历分组查询日程，不调用模型"
+          }
+        }
+      }
+    },
+    "/admin/releases": {
+      "get": {
+        "operationId": "admin.releaseList",
+        "summary": "分页读取安卓版本记录",
+        "security": [
+          {
+            "console": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "后台网络策略拒绝此连接",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "分页读取安卓版本记录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "releases": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AndroidRelease"
+                      }
+                    },
+                    "more": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要有效会话"
+          }
+        }
+      },
+      "post": {
+        "operationId": "admin.releasePublish",
+        "summary": "发布安卓安装包",
+        "security": [
+          {
+            "console": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "403": {
+            "description": "后台网络策略拒绝此连接",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "发布安卓安装包",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AndroidRelease"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要有效会话"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "apk"
+                ],
+                "properties": {
+                  "apk": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/releases/{package}/{code}/withdraw": {
+      "post": {
+        "operationId": "admin.releaseWithdraw",
+        "summary": "撤回指定安卓版本",
+        "security": [
+          {
+            "console": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "org.timepin.app",
+                "org.timepin.app.community",
+                "org.timepin.app.glass",
+                "org.timepin.app.qa"
+              ]
+            }
+          },
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "后台网络策略拒绝此连接",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "撤回指定安卓版本",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AndroidRelease"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要有效会话"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/{package}/latest": {
+      "get": {
+        "operationId": "android.latest",
+        "summary": "查询此包的最新已发布版本",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "org.timepin.app",
+                "org.timepin.app.community",
+                "org.timepin.app.glass",
+                "org.timepin.app.qa"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询此包的最新已发布版本",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "release": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/AndroidRelease"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需要有效会话"
+          }
+        }
+      }
+    },
+    "/releases/{package}/{code}/apk": {
+      "get": {
+        "operationId": "android.download",
+        "summary": "下载已发布的 APK",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "org.timepin.app",
+                "org.timepin.app.community",
+                "org.timepin.app.glass",
+                "org.timepin.app.qa"
+              ]
+            }
+          },
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "APK 文件",
+            "content": {
+              "application/vnd.android.package-archive": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "需成员会话"
+          },
+          "404": {
+            "description": "未发布或已撤回"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "timepin_session"
+      },
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "成员令牌可选择一本或本人全部日历，逐本按实时成员角色和令牌上限授权"
+      },
+      "console": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "timepin_console",
+        "description": "独立后台会话，仅用于 /api/v1/admin"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "OK": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      },
+      "ID": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "AIStatus": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "admin": {
+            "type": "boolean"
+          },
+          "model": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "admin"
+        ],
+        "additionalProperties": false
+      },
+      "Calendar": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerKind": {
+            "enum": [
+              "person",
+              "group"
+            ]
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "color": {
+            "$ref": "schema.json#/$defs/color"
+          },
+          "role": {
+            "enum": [
+              "reader",
+              "contributor",
+              "editor",
+              "manager"
+            ]
+          },
+          "visible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "ownerKind",
+          "ownerId",
+          "color",
+          "role",
+          "visible"
+        ],
+        "additionalProperties": false
+      },
+      "Group": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "member"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "Batch": {
+        "type": "object",
+        "properties": {
+          "seq": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "seq",
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "calendarId": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "reader",
+              "contributor",
+              "editor",
+              "manager"
+            ]
+          },
+          "expires": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "calendarId",
+          "role",
+          "expires"
+        ],
+        "additionalProperties": false
+      },
+      "Member": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "Invite": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "expires": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "expires"
+        ],
+        "additionalProperties": false
+      },
+      "Detail": {
+        "type": "object",
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            }
+          },
+          "invites": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Invite"
+            }
+          },
+          "shareToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "members",
+          "invites",
+          "shareToken"
+        ],
+        "additionalProperties": false
+      },
+      "ChatTurn": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "enum": [
+              "assistant",
+              "user"
+            ]
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "ChatInput": {
+        "type": "object",
+        "properties": {
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "calendarId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1
+          },
+          "zone": {
+            "type": "string"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatTurn"
+            },
+            "maxItems": 8
+          },
+          "calendarIds": {
+            "type": "array",
+            "items": {
+              "$ref": "schema.json#/$defs/id"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "operationId",
+          "message",
+          "zone"
+        ],
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "required": [
+              "calendarId"
+            ]
+          },
+          {
+            "required": [
+              "calendarIds"
+            ]
+          }
+        ]
+      },
+      "ChatReply": {
+        "type": "object",
+        "properties": {
+          "operationId": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "completed",
+              "confirmation"
+            ]
+          },
+          "op": {
+            "type": "string"
+          },
+          "result": {},
+          "proposal": {}
+        },
+        "required": [
+          "operationId",
+          "text",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "calendar_publish": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.publish"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "pattern": "^(mobile-[0-9a-f-]{36}|system-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "color": {
+            "$ref": "schema.json#/$defs/color"
+          },
+          "records": {
+            "type": "array",
+            "maxItems": 100000,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "schema.json#/$defs/id"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740990
+                },
+                "sourceVersion": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "event": {
+                  "$ref": "schema.json#/$defs/event"
+                }
+              },
+              "required": [
+                "id",
+                "version",
+                "sourceVersion",
+                "event"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "name",
+          "color",
+          "records"
+        ],
+        "additionalProperties": false,
+        "description": "将本机日历的现存事件发布为本账号的新日历，保留日历编号和事件版本"
+      },
+      "calendar_create": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.create"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "$ref": "schema.json#/$defs/color"
+          },
+          "team": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "name",
+          "color"
+        ],
+        "additionalProperties": false,
+        "description": "创建个人日历，或指定团组归属",
+        "x-result": {
+          "$ref": "#/components/schemas/ID"
+        }
+      },
+      "calendar_update": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.update"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "$ref": "schema.json#/$defs/color"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "name",
+          "color"
+        ],
+        "additionalProperties": false,
+        "description": "更新名称和日历颜色",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "calendar_detail": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.detail"
+          },
+          "target": {
+            "type": "string"
+          },
+          "operationId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "target"
+        ],
+        "additionalProperties": false,
+        "description": "读取日历授权及分享详情",
+        "x-result": {
+          "$ref": "#/components/schemas/Detail"
+        }
+      },
+      "calendar_grant": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.grant"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "subjectKind": {
+            "enum": [
+              "user",
+              "group"
+            ]
+          },
+          "subject": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "reader",
+              "contributor",
+              "editor",
+              "manager",
+              "remove"
+            ]
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "subjectKind",
+          "subject",
+          "role"
+        ],
+        "additionalProperties": false,
+        "description": "给账号或团组授权，也可移除授权",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "calendar_visible": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.visible"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "enabled"
+        ],
+        "additionalProperties": false,
+        "description": "设置本人显示的日历",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "calendar_share": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.share"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "enabled"
+        ],
+        "additionalProperties": false,
+        "description": "开启、轮换或关闭访客链接",
+        "x-result": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/OK"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "token"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "group_create": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "group.create"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "name"
+        ],
+        "additionalProperties": false,
+        "description": "创建团组",
+        "x-result": {
+          "$ref": "#/components/schemas/ID"
+        }
+      },
+      "group_member": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "group.member"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "member",
+              "remove"
+            ]
+          },
+          "subjectKind": {
+            "const": "user"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "subject",
+          "role"
+        ],
+        "additionalProperties": false,
+        "description": "添加成员、改权或移除",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "group_transfer": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "group.transfer"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "subject"
+        ],
+        "additionalProperties": false,
+        "description": "移交组管理权",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "group_detail": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "group.detail"
+          },
+          "target": {
+            "type": "string"
+          },
+          "operationId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "target"
+        ],
+        "additionalProperties": false,
+        "description": "读取组成员和邀请",
+        "x-result": {
+          "$ref": "#/components/schemas/Detail"
+        }
+      },
+      "invite_accept": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "invite.accept"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "token"
+        ],
+        "additionalProperties": false,
+        "description": "使用一次性邀请加入",
+        "x-result": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "group_invite": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "group.invite"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "member"
+            ]
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "role"
+        ],
+        "additionalProperties": false,
+        "description": "创建指定角色的一次性邀请",
+        "x-result": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "token": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "token"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "group_uninvite": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "group.uninvite"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "inviteId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "inviteId"
+        ],
+        "additionalProperties": false,
+        "description": "撤销邀请",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "calendar_invite": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.invite"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "reader",
+              "contributor",
+              "editor",
+              "manager"
+            ]
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "role"
+        ],
+        "additionalProperties": false,
+        "description": "创建指定角色的一次性邀请",
+        "x-result": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "token": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "token"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "calendar_uninvite": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.uninvite"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "inviteId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "inviteId"
+        ],
+        "additionalProperties": false,
+        "description": "撤销邀请",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "model_members": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "model.members"
+          },
+          "operationId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "additionalProperties": false,
+        "description": "列出可调用实例模型的成员",
+        "x-result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "model_grant": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "model.grant"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "subject",
+          "enabled"
+        ],
+        "additionalProperties": false,
+        "description": "给指定账号启用或关闭共用模型",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "token_list": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "token.list"
+          },
+          "operationId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "additionalProperties": false,
+        "description": "列出本人的自动化令牌",
+        "x-result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Token"
+          }
+        }
+      },
+      "token_create": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "token.create"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "description": "具体日历编号，或 * 表示本人现在及以后可访问的所有日历"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "reader",
+              "contributor",
+              "editor",
+              "manager"
+            ]
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "name",
+          "role",
+          "token"
+        ],
+        "additionalProperties": false,
+        "description": "登记客户端生成的 64 位小写十六进制随机令牌",
+        "x-result": {
+          "$ref": "#/components/schemas/ID"
+        }
+      },
+      "token_revoke": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "token.revoke"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target"
+        ],
+        "additionalProperties": false,
+        "description": "撤销本人的令牌",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "Management": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/calendar_publish"
+          },
+          {
+            "$ref": "#/components/schemas/calendar_create"
+          },
+          {
+            "$ref": "#/components/schemas/calendar_update"
+          },
+          {
+            "$ref": "#/components/schemas/calendar_detail"
+          },
+          {
+            "$ref": "#/components/schemas/calendar_grant"
+          },
+          {
+            "$ref": "#/components/schemas/calendar_visible"
+          },
+          {
+            "$ref": "#/components/schemas/calendar_share"
+          },
+          {
+            "$ref": "#/components/schemas/group_create"
+          },
+          {
+            "$ref": "#/components/schemas/group_member"
+          },
+          {
+            "$ref": "#/components/schemas/group_transfer"
+          },
+          {
+            "$ref": "#/components/schemas/group_detail"
+          },
+          {
+            "$ref": "#/components/schemas/invite_accept"
+          },
+          {
+            "$ref": "#/components/schemas/group_invite"
+          },
+          {
+            "$ref": "#/components/schemas/group_uninvite"
+          },
+          {
+            "$ref": "#/components/schemas/calendar_invite"
+          },
+          {
+            "$ref": "#/components/schemas/calendar_uninvite"
+          },
+          {
+            "$ref": "#/components/schemas/token_list"
+          },
+          {
+            "$ref": "#/components/schemas/token_create"
+          },
+          {
+            "$ref": "#/components/schemas/token_revoke"
+          },
+          {
+            "$ref": "#/components/schemas/display_detail"
+          },
+          {
+            "$ref": "#/components/schemas/display_update"
+          },
+          {
+            "$ref": "#/components/schemas/calendar_delete"
+          },
+          {
+            "$ref": "#/components/schemas/profile_detail"
+          },
+          {
+            "$ref": "#/components/schemas/profile_update"
+          }
+        ]
+      },
+      "MonthDisplay": {
+        "type": "object",
+        "properties": {
+          "weekStart": {
+            "enum": [
+              "sunday",
+              "monday"
+            ]
+          },
+          "weekNumbers": {
+            "type": "boolean"
+          },
+          "lunarFormat": {
+            "enum": [
+              "text",
+              "numeric"
+            ],
+            "default": "text"
+          },
+          "lunar": {
+            "type": "boolean"
+          },
+          "holidayRegion": {
+            "enum": [
+              "system",
+              "off",
+              "AD",
+              "AE",
+              "AF",
+              "AG",
+              "AI",
+              "AL",
+              "AM",
+              "AO",
+              "AQ",
+              "AR",
+              "AS",
+              "AT",
+              "AU",
+              "AW",
+              "AX",
+              "AZ",
+              "BA",
+              "BB",
+              "BD",
+              "BE",
+              "BF",
+              "BG",
+              "BH",
+              "BI",
+              "BJ",
+              "BL",
+              "BM",
+              "BN",
+              "BO",
+              "BQ",
+              "BR",
+              "BS",
+              "BT",
+              "BV",
+              "BW",
+              "BY",
+              "BZ",
+              "CA",
+              "CC",
+              "CD",
+              "CF",
+              "CG",
+              "CH",
+              "CI",
+              "CK",
+              "CL",
+              "CM",
+              "CN",
+              "CO",
+              "CR",
+              "CU",
+              "CV",
+              "CW",
+              "CX",
+              "CY",
+              "CZ",
+              "DE",
+              "DJ",
+              "DK",
+              "DM",
+              "DO",
+              "DZ",
+              "EC",
+              "EE",
+              "EG",
+              "EH",
+              "ER",
+              "ES",
+              "ET",
+              "FI",
+              "FJ",
+              "FK",
+              "FM",
+              "FO",
+              "FR",
+              "GA",
+              "GB",
+              "GD",
+              "GE",
+              "GF",
+              "GG",
+              "GH",
+              "GI",
+              "GL",
+              "GM",
+              "GN",
+              "GP",
+              "GQ",
+              "GR",
+              "GS",
+              "GT",
+              "GU",
+              "GW",
+              "GY",
+              "HK",
+              "HM",
+              "HN",
+              "HR",
+              "HT",
+              "HU",
+              "ID",
+              "IE",
+              "IL",
+              "IM",
+              "IN",
+              "IO",
+              "IQ",
+              "IR",
+              "IS",
+              "IT",
+              "JE",
+              "JM",
+              "JO",
+              "JP",
+              "KE",
+              "KG",
+              "KH",
+              "KI",
+              "KM",
+              "KN",
+              "KP",
+              "KR",
+              "KW",
+              "KY",
+              "KZ",
+              "LA",
+              "LB",
+              "LC",
+              "LI",
+              "LK",
+              "LR",
+              "LS",
+              "LT",
+              "LU",
+              "LV",
+              "LY",
+              "MA",
+              "MC",
+              "MD",
+              "ME",
+              "MF",
+              "MG",
+              "MH",
+              "MK",
+              "ML",
+              "MM",
+              "MN",
+              "MO",
+              "MP",
+              "MQ",
+              "MR",
+              "MS",
+              "MT",
+              "MU",
+              "MV",
+              "MW",
+              "MX",
+              "MY",
+              "MZ",
+              "NA",
+              "NC",
+              "NE",
+              "NF",
+              "NG",
+              "NI",
+              "NL",
+              "NO",
+              "NP",
+              "NR",
+              "NU",
+              "NZ",
+              "OM",
+              "PA",
+              "PE",
+              "PF",
+              "PG",
+              "PH",
+              "PK",
+              "PL",
+              "PM",
+              "PN",
+              "PR",
+              "PS",
+              "PT",
+              "PW",
+              "PY",
+              "QA",
+              "RE",
+              "RO",
+              "RS",
+              "RU",
+              "RW",
+              "SA",
+              "SB",
+              "SC",
+              "SD",
+              "SE",
+              "SG",
+              "SH",
+              "SI",
+              "SJ",
+              "SK",
+              "SL",
+              "SM",
+              "SN",
+              "SO",
+              "SR",
+              "SS",
+              "ST",
+              "SV",
+              "SX",
+              "SY",
+              "SZ",
+              "TC",
+              "TD",
+              "TF",
+              "TG",
+              "TH",
+              "TJ",
+              "TK",
+              "TL",
+              "TM",
+              "TN",
+              "TO",
+              "TR",
+              "TT",
+              "TV",
+              "TW",
+              "TZ",
+              "UA",
+              "UG",
+              "UM",
+              "US",
+              "UY",
+              "UZ",
+              "VA",
+              "VC",
+              "VE",
+              "VG",
+              "VI",
+              "VN",
+              "VU",
+              "WF",
+              "WS",
+              "XK",
+              "YE",
+              "YT",
+              "ZA",
+              "ZM",
+              "ZW"
+            ]
+          },
+          "fontSize": {
+            "enum": [
+              12,
+              14,
+              16,
+              18
+            ]
+          }
+        },
+        "required": [
+          "weekStart",
+          "weekNumbers",
+          "lunar",
+          "holidayRegion",
+          "fontSize"
+        ],
+        "additionalProperties": false
+      },
+      "display_detail": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "display.detail"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "additionalProperties": false,
+        "description": "读取本人月历显示设置",
+        "x-result": {
+          "$ref": "#/components/schemas/MonthDisplay"
+        }
+      },
+      "display_update": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "display.update"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "display": {
+            "$ref": "#/components/schemas/MonthDisplay"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "display"
+        ],
+        "additionalProperties": false,
+        "description": "保存本人月历显示设置，system 表示使用查看设备的地区",
+        "x-result": {
+          "$ref": "#/components/schemas/MonthDisplay"
+        }
+      },
+      "instance_detail": {
+        "type": "object",
+        "description": "读取实例设置和成员",
+        "properties": {
+          "op": {
+            "const": "instance.detail"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "additionalProperties": false
+      },
+      "instance_registration": {
+        "type": "object",
+        "description": "设置开放注册",
+        "properties": {
+          "op": {
+            "const": "instance.registration"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "enabled"
+        ],
+        "additionalProperties": false
+      },
+      "instance_account": {
+        "type": "object",
+        "description": "启用或停用实例账号",
+        "properties": {
+          "op": {
+            "const": "instance.account"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "enabled"
+        ],
+        "additionalProperties": false
+      },
+      "instance_accountCreate": {
+        "type": "object",
+        "description": "创建成员账号与默认个人日历",
+        "properties": {
+          "op": {
+            "const": "instance.accountCreate"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "password": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 256,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "name",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "instance_accountRename": {
+        "type": "object",
+        "description": "按成员编号修改登录名",
+        "properties": {
+          "op": {
+            "const": "instance.accountRename"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "instance_accountPassword": {
+        "type": "object",
+        "description": "重设成员密码并撤销会话、令牌与恢复码",
+        "properties": {
+          "op": {
+            "const": "instance.accountPassword"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "password": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 256,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "instance_model": {
+        "type": "object",
+        "description": "配置实例共用模型",
+        "properties": {
+          "op": {
+            "const": "instance.model"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "baseUrl": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "key": {
+            "type": "string",
+            "maxLength": 4096,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "enabled",
+          "baseUrl",
+          "model"
+        ],
+        "additionalProperties": false
+      },
+      "ConsoleManagement": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/model_members"
+          },
+          {
+            "$ref": "#/components/schemas/model_grant"
+          },
+          {
+            "$ref": "#/components/schemas/instance_detail"
+          },
+          {
+            "$ref": "#/components/schemas/instance_registration"
+          },
+          {
+            "$ref": "#/components/schemas/instance_account"
+          },
+          {
+            "$ref": "#/components/schemas/instance_accountCreate"
+          },
+          {
+            "$ref": "#/components/schemas/instance_accountRename"
+          },
+          {
+            "$ref": "#/components/schemas/instance_accountPassword"
+          },
+          {
+            "$ref": "#/components/schemas/instance_model"
+          },
+          {
+            "$ref": "#/components/schemas/instance_overview"
+          },
+          {
+            "$ref": "#/components/schemas/instance_directory"
+          },
+          {
+            "$ref": "#/components/schemas/instance_history"
+          },
+          {
+            "$ref": "#/components/schemas/instance_signout"
+          },
+          {
+            "$ref": "#/components/schemas/instance_uninvite"
+          },
+          {
+            "$ref": "#/components/schemas/instance_revokeToken"
+          },
+          {
+            "$ref": "#/components/schemas/instance_cancelRecovery"
+          },
+          {
+            "$ref": "#/components/schemas/instance_unshare"
+          },
+          {
+            "$ref": "#/components/schemas/instance_invite"
+          },
+          {
+            "$ref": "#/components/schemas/instance_recovery"
+          },
+          {
+            "$ref": "#/components/schemas/instance_groupCreate"
+          },
+          {
+            "$ref": "#/components/schemas/instance_groupRename"
+          },
+          {
+            "$ref": "#/components/schemas/instance_groupMember"
+          },
+          {
+            "$ref": "#/components/schemas/instance_calendarCreate"
+          },
+          {
+            "$ref": "#/components/schemas/instance_calendarUpdate"
+          },
+          {
+            "$ref": "#/components/schemas/instance_calendarGrant"
+          },
+          {
+            "$ref": "#/components/schemas/instance_backupCreate"
+          },
+          {
+            "$ref": "#/components/schemas/instance_backups"
+          }
+        ]
+      },
+      "instance_overview": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.overview"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "additionalProperties": false,
+        "description": "读取实例计数、运行配置、存储指标和最近四条管理记录"
+      },
+      "instance_directory": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.directory"
+          },
+          "section": {
+            "type": "string",
+            "enum": [
+              "accounts",
+              "calendarOwners",
+              "calendars",
+              "groups",
+              "shares",
+              "invites",
+              "tokens",
+              "members",
+              "grants"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "subjectKind": {
+            "enum": ["user", "group"]
+          },
+          "search": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "op",
+          "section"
+        ],
+        "additionalProperties": false,
+        "description": "calendarOwners 按实际所有者返回账号、团组及各自的日历数；calendars 支持按 subjectKind 与 target 所有者编号筛选。每页最多 25 行。"
+      },
+      "instance_history": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.history"
+          },
+          "before": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "additionalProperties": false,
+        "description": "查询最近成功的管理变更，可用 before 序号向前翻页"
+      },
+      "instance_signout": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.signout"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target"
+        ],
+        "additionalProperties": false,
+        "description": "撤销账号现有登录会话"
+      },
+      "instance_uninvite": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.uninvite"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target"
+        ],
+        "additionalProperties": false,
+        "description": "撤销一份邀请"
+      },
+      "instance_revokeToken": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.revokeToken"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target"
+        ],
+        "additionalProperties": false,
+        "description": "撤销指定接口令牌"
+      },
+      "instance_cancelRecovery": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.cancelRecovery"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target"
+        ],
+        "additionalProperties": false,
+        "description": "撤销账号恢复码"
+      },
+      "instance_unshare": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.unshare"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "revision": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "revision"
+        ],
+        "additionalProperties": false,
+        "description": "关闭列出的只读链接，若链接已更换则返回冲突"
+      },
+      "instance_invite": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.invite"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "token": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "token"
+        ],
+        "additionalProperties": false,
+        "description": "签发七天内有效、仅可使用一次的实例注册码。客户端生成 32 字节随机码并进行十六进制编码。"
+      },
+      "instance_recovery": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.recovery"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "token": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "token",
+          "target"
+        ],
+        "additionalProperties": false,
+        "description": "签发账号 30 分钟有效的一次性密码恢复码，更新时旧码失效"
+      },
+      "instance_groupCreate": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.groupCreate"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "name",
+          "subject"
+        ],
+        "additionalProperties": false,
+        "description": "建组并指定首位团组管理员的账号名"
+      },
+      "instance_groupRename": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.groupRename"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "name"
+        ],
+        "additionalProperties": false,
+        "description": "更改团组名称"
+      },
+      "instance_groupMember": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.groupMember"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "member",
+              "admin",
+              "remove"
+            ]
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "subject",
+          "role"
+        ],
+        "additionalProperties": false,
+        "description": "添加、调整或移除团组成员，保留最后一位管理员"
+      },
+      "instance_calendarCreate": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.calendarCreate"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "subjectKind": {
+            "type": "string",
+            "enum": [
+              "user",
+              "group"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "subject",
+          "subjectKind",
+          "name",
+          "color"
+        ],
+        "additionalProperties": false,
+        "description": "为个人账号名或团组编号建日历"
+      },
+      "instance_calendarUpdate": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.calendarUpdate"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "name",
+          "color"
+        ],
+        "additionalProperties": false,
+        "description": "修改日历名称和默认颜色"
+      },
+      "instance_calendarGrant": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.calendarGrant"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "subjectKind": {
+            "type": "string",
+            "enum": [
+              "user",
+              "group"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "reader",
+              "contributor",
+              "editor",
+              "manager",
+              "remove"
+            ]
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target",
+          "subject",
+          "subjectKind",
+          "role"
+        ],
+        "additionalProperties": false,
+        "description": "管理单本日历的直接授权，个人使用账号名，团组使用编号"
+      },
+      "ConsoleAuditEntry": {
+        "type": "object",
+        "properties": {
+          "actor": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "setting": {
+            "type": "string"
+          },
+          "seq": {
+            "type": "integer"
+          },
+          "at": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "actor",
+          "action",
+          "target",
+          "subject",
+          "setting",
+          "seq",
+          "at"
+        ],
+        "additionalProperties": false
+      },
+      "ConsoleOverview": {
+        "type": "object",
+        "properties": {
+          "counts": {
+            "type": "object",
+            "properties": {
+              "accounts": {
+                "type": "integer"
+              },
+              "disabled": {
+                "type": "integer"
+              },
+              "calendars": {
+                "type": "integer"
+              },
+              "groups": {
+                "type": "integer"
+              },
+              "shares": {
+                "type": "integer"
+              },
+              "invites": {
+                "type": "integer"
+              },
+              "tokens": {
+                "type": "integer"
+              },
+              "sessions": {
+                "type": "integer"
+              },
+              "modelMembers": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "accounts",
+              "disabled",
+              "calendars",
+              "groups",
+              "shares",
+              "invites",
+              "tokens",
+              "sessions",
+              "modelMembers"
+            ],
+            "additionalProperties": false
+          },
+          "recent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsoleAuditEntry"
+            }
+          },
+          "registration": {
+            "type": "boolean"
+          },
+          "model": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "hasKey": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "model",
+              "baseUrl",
+              "enabled",
+              "hasKey"
+            ],
+            "additionalProperties": false
+          },
+          "storage": {
+            "type": "object",
+            "properties": {
+              "sqlite": {
+                "type": "string"
+              },
+              "schema": {
+                "type": "integer"
+              },
+              "bytes": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "sqlite",
+              "schema",
+              "bytes"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "counts",
+          "recent",
+          "registration",
+          "model",
+          "storage"
+        ],
+        "additionalProperties": false
+      },
+      "ConsoleDirectoryItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "calendar": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "sessions": {
+            "type": "integer"
+          },
+          "calendars": {
+            "type": "integer"
+          },
+          "members": {
+            "type": "integer"
+          },
+          "expires": {
+            "type": "integer"
+          },
+          "ai": {
+            "type": "boolean"
+          },
+          "recovery": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "public": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "owner"
+        ],
+        "additionalProperties": false
+      },
+      "instance_backupCreate": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.backupCreate"
+          },
+          "operationId": {
+            "$ref": "schema.json#/$defs/id"
+          }
+        },
+        "required": [
+          "op",
+          "operationId"
+        ],
+        "additionalProperties": false,
+        "description": "在服务器数据目录创建并校验 SQLite 快照"
+      },
+      "instance_backups": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "instance.backups"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "additionalProperties": false,
+        "description": "查询后台备份记录，按时间倒序分页"
+      },
+      "ConsoleBackup": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "at": {
+            "type": "integer"
+          },
+          "bytes": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "file",
+          "at",
+          "bytes"
+        ],
+        "additionalProperties": false
+      },
+      "calendar_delete": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "calendar.delete"
+          },
+          "operationId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "target"
+        ],
+        "additionalProperties": false,
+        "description": "删除个人所有或本人任管理员的团组日历及其全部日程，共享与单日历令牌同时失效",
+        "x-result": {
+          "$ref": "#/components/schemas/OK"
+        }
+      },
+      "PersonalProfile": {
+        "type": "object",
+        "properties": {
+          "loginName": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "avatarVersion": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "loginName",
+          "displayName",
+          "revision",
+          "avatarVersion"
+        ]
+      },
+      "profile_detail": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "profile.detail"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "additionalProperties": false,
+        "description": "获取本人昵称、登录名及已设置的头像",
+        "x-result": {
+          "$ref": "#/components/schemas/PersonalProfile"
+        }
+      },
+      "profile_update": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "const": "profile.update"
+          },
+          "operationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "avatar": {
+            "type": "string",
+            "maxLength": 87384,
+            "description": "方形 JPEG 的标准 Base64，至多 256 像素、64 KiB，空字符串恢复文字头像。"
+          }
+        },
+        "required": [
+          "op",
+          "operationId",
+          "revision"
+        ],
+        "additionalProperties": false,
+        "description": "更新本人昵称或头像，返回最新资料摘要",
+        "x-result": {
+          "$ref": "#/components/schemas/ProfileSummary"
+        }
+      },
+      "ProfileSummary": {
+        "type": "object",
+        "properties": {
+          "loginName": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "avatarVersion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "loginName",
+          "displayName",
+          "revision",
+          "avatarVersion"
+        ],
+        "additionalProperties": false
+      },
+      "AndroidRelease": {
+        "type": "object",
+        "properties": {
+          "packageName": {
+            "type": "string"
+          },
+          "versionName": {
+            "type": "string"
+          },
+          "versionCode": {
+            "type": "integer"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "bytes": {
+            "type": "integer"
+          },
+          "created": {
+            "type": "integer"
+          },
+          "published": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "packageName",
+          "versionName",
+          "versionCode",
+          "notes",
+          "sha256",
+          "bytes",
+          "created",
+          "published"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "calendar": {"id": "work", "ownerKind": "group", "ownerId": "team", "color": "#336699"},
+  "actors": {"alice": {"id": "alice", "role": "editor"}},
+  "steps": [
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-gap",
+        "eventId": "gap",
+        "event": {
+          "title": "晨班",
+          "span": {
+            "kind": "timed",
+            "start": "2026-03-07T02:30:00-05:00",
+            "end": "2026-03-07T03:00:00-05:00",
+            "zone": "America/New_York"
+          },
+          "repeat": {"frequency": "daily", "interval": 1, "until": "2026-03-09"}
+        }
+      },
+      "expect": {"code": "ok", "record": {}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-03-07", "end": "2026-03-10", "zone": "America/New_York"}
+      },
+      "expect": {
+        "code": "ok",
+        "occurrences": [
+          {"on": "2026-03-07"},
+          {
+            "on": "2026-03-09",
+            "span": {
+              "kind": "timed",
+              "start": "2026-03-09T02:30:00-04:00",
+              "end": "2026-03-09T03:00:00-04:00",
+              "zone": "America/New_York"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-fold",
+        "eventId": "fold",
+        "event": {
+          "title": "秋季晨班",
+          "span": {
+            "kind": "timed",
+            "start": "2026-10-31T01:15:00-04:00",
+            "end": "2026-10-31T01:45:00-04:00",
+            "zone": "America/New_York"
+          },
+          "repeat": {"frequency": "daily", "interval": 1, "until": "2026-11-02"}
+        }
+      },
+      "expect": {"code": "ok", "record": {}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-11-01", "end": "2026-11-02", "zone": "America/New_York"}
+      },
+      "expect": {
+        "code": "ok",
+        "occurrences": [
+          {
+            "span": {
+              "kind": "timed",
+              "start": "2026-11-01T01:15:00-04:00",
+              "end": "2026-11-01T01:45:00-04:00",
+              "zone": "America/New_York"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-monthly",
+        "eventId": "monthly",
+        "event": {
+          "title": "月末",
+          "span": {"kind": "date", "start": "2025-01-31", "end": "2025-02-01"},
+          "repeat": {"frequency": "monthly", "interval": 1}
+        }
+      },
+      "expect": {"code": "ok", "record": {}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2025-02-01", "end": "2025-04-01", "zone": "Asia/Shanghai"}
+      },
+      "expect": {
+        "code": "ok",
+        "occurrences": [{"on": "2025-03-31", "span": {"kind": "date", "start": "2025-03-31", "end": "2025-04-01"}}]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-leap",
+        "eventId": "leap",
+        "event": {
+          "title": "闰日",
+          "span": {"kind": "date", "start": "2024-02-29", "end": "2024-03-01"},
+          "repeat": {"frequency": "yearly", "interval": 1}
+        }
+      },
+      "expect": {"code": "ok", "record": {}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2028-02-29", "end": "2028-03-01", "zone": "Asia/Shanghai"}
+      },
+      "expect": {"code": "ok", "occurrences": [{"on": "2028-02-29", "eventId": "leap"}]}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-badzone",
+        "eventId": "badzone",
+        "event": {
+          "title": "无效时刻",
+          "span": {
+            "kind": "timed",
+            "start": "2026-03-08T02:30:00-05:00",
+            "end": "2026-03-08T03:30:00-04:00",
+            "zone": "America/New_York"
+          }
+        }
+      },
+      "expect": {"code": "invalid"}
+    }
+  ]
+}

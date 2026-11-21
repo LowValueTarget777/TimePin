@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>TimePin · 服务器后台</title>
+    <link rel="icon" href="/admin/mark.svg" />
+    <link rel="stylesheet" href="/admin/app.css" />
+    <link rel="stylesheet" href="/admin/dark.css" media="(prefers-color-scheme: dark)" />
+    <link rel="stylesheet" href="/admin/panel.css" />
+    <script type="module" src="/admin/panel.js"></script>
+  </head>
+  <body>
+    <main id="console-login" class="console-login" hidden>
+      <form id="console-form" class="console-card">
+        <div class="brand"><img src="/admin/mark.svg" alt="" />TimePin</div>
+        <h1>登录服务器后台</h1>
+        <label
+          >后台账号<input
+            name="name"
+            autocomplete="username"
+            required
+            maxlength="80"
+        /></label>
+        <label
+          >后台密码<input
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+            maxlength="256"
+        /></label>
+        <button class="primary">登录后台</button>
+      </form>
+    </main>
+    <div id="admin-page" class="console-layout" hidden>
+      <aside class="console-rail">
+        <a class="wordmark" href="#overview"
+          ><img src="/admin/mark.svg" alt="" /><span>TimePin</span></a
+        >
+        <div class="rail-title">服务器后台</div>
+        <nav id="console-nav" aria-label="后台导航"></nav>
+        <div class="operator">
+          <span class="operator-mark" aria-hidden="true">TP</span>
+          <div>
+            <strong id="operator-name"></strong><small>实例管理员</small>
+          </div>
+          <button id="exit" title="退出后台" aria-label="退出后台"></button>
+        </div>
+      </aside>
+      <main class="console-main">
+        <header class="console-heading">
+          <div>
+            <h1 id="page-title"></h1>
+            <p id="page-summary"></p>
+          </div>
+          <button id="refresh" type="button">刷新</button>
+        </header>
+        <div id="page-content"></div>
+      </main>
+    </div>
+    <dialog id="dialog">
+      <div class="dialog-head">
+        <h2 id="dialog-title"></h2>
+        <button id="dialog-close" aria-label="关闭">×</button>
+      </div>
+      <div id="dialog-content"></div>
+    </dialog>
+    <p id="notice" role="status" hidden></p>
+  </body>
+</html>

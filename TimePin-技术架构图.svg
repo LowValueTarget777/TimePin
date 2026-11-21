@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 735" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" role="img" aria-labelledby="title desc">
+<title id="title">TimePin · 技术架构</title><desc id="desc">部署单元为 Go 日历服务器及 SQLite 持久卷。个人 Web 可独立托管，后台使用独立账号与管理 API。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" markerWidth="7" markerHeight="7" refX="9" refY="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#51867d"/></marker></defs>
+<rect x="0" y="0" width="1200" height="735" rx="15" fill="#f5f8f3"/>
+<text x="36" y="55" font-size="34" fill="#173e36" font-weight="700">TimePin · 技术架构</text>
+<text x="38" y="91" font-size="18" fill="#203c38" font-weight="400">部署单元为 Go 日历服务器及 SQLite 持久卷。个人 Web 可独立托管，后台使用独立账号与管理 API。</text>
+<rect x="36" y="124" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="154" font-size="20" fill="#194d42" font-weight="650">安卓 UI 与桌面组件</text>
+<text x="53" y="179" font-size="15" fill="#203c38" font-weight="400">设备命令 · 组件配置、同步与冲突处理</text>
+<rect x="821" y="124" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="154" font-size="20" fill="#334f70" font-weight="650">Room / SQLite</text>
+<text x="837" y="179" font-size="15" fill="#203c38" font-weight="400">离线读写；更新后合并刷新组件</text>
+<text x="391" y="153" font-size="16" fill="#203c38" font-weight="400">读写本机库</text>
+<path d="M382 171H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="213" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="243" font-size="20" fill="#194d42" font-weight="650">安卓同步器</text>
+<text x="53" y="268" font-size="15" fill="#203c38" font-weight="400">本机自动上传 · 增量下载至 Room</text>
+<rect x="821" y="213" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="243" font-size="20" fill="#334f70" font-weight="650">服务端同步 API</text>
+<text x="837" y="268" font-size="15" fill="#203c38" font-weight="400">事务、版本检查、删除和撤权</text>
+<text x="391" y="242" font-size="16" fill="#203c38" font-weight="400">账号目录 / 增量拉取 / 队列回传</text>
+<path d="M382 260H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="302" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="332" font-size="20" fill="#194d42" font-weight="650">Web 日历 / CLI / MCP</text>
+<text x="53" y="357" font-size="15" fill="#203c38" font-weight="400">会话或令牌 · 逐本校验角色</text>
+<rect x="821" y="302" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="332" font-size="20" fill="#334f70" font-weight="650">服务端日历命令</text>
+<text x="837" y="357" font-size="15" fill="#203c38" font-weight="400">授权后读写实例 SQLite</text>
+<text x="391" y="331" font-size="16" fill="#203c38" font-weight="400">查询所选日历或提交操作</text>
+<path d="M382 349H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="391" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="421" font-size="20" fill="#194d42" font-weight="650">Web 与安卓个人模型</text>
+<text x="53" y="446" font-size="15" fill="#203c38" font-weight="400">设备端预设或自定义兼容接口</text>
+<rect x="821" y="391" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="421" font-size="20" fill="#334f70" font-weight="650">用户选择的模型服务</text>
+<text x="837" y="446" font-size="15" fill="#203c38" font-weight="400">密钥留在客户端；写操作走业务命令</text>
+<text x="391" y="420" font-size="16" fill="#203c38" font-weight="400">直连模型 · 工具建议回到客户端</text>
+<path d="M382 438H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="480" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="510" font-size="20" fill="#194d42" font-weight="650">Web 与安卓服务器模型</text>
+<text x="53" y="535" font-size="15" fill="#203c38" font-weight="400">显式选择日历、账号或本机设备</text>
+<rect x="821" y="480" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="510" font-size="20" fill="#334f70" font-weight="650">服务器模型网关</text>
+<text x="837" y="535" font-size="15" fill="#203c38" font-weight="400">实例开关与账号 AI 授权均须通过</text>
+<text x="391" y="509" font-size="16" fill="#203c38" font-weight="400">鉴权后生成提案 · 设备操作返回手机</text>
+<path d="M382 527H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="569" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="599" font-size="20" fill="#194d42" font-weight="650">后台与局域网发现</text>
+<text x="53" y="624" font-size="15" fill="#203c38" font-weight="400">后台局域网直连 · PassNAT 回环供成员访问</text>
+<rect x="821" y="569" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="599" font-size="20" fill="#334f70" font-weight="650">日历服务器</text>
+<text x="837" y="624" font-size="15" fill="#203c38" font-weight="400">后台审计、备份与 APK 分发 · UDP 发现</text>
+<text x="391" y="598" font-size="16" fill="#203c38" font-weight="400">管理请求或用户触发的发现请求</text>
+<path d="M382 616H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<text x="39" y="694" font-size="16" fill="#203c38" font-weight="400">浏览器个人密钥驻留当前标签页；安卓用 Keystore 保护凭据；服务器模型密钥随受限数据库或宿主环境保存。</text>
+ </svg>

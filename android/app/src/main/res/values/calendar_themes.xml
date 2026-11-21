@@ -1,0 +1,76 @@
+<resources>
+    <style name="WidgetSettingsOverlay">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+    <style name="CalendarLight" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:colorAccent">#21694F</item>
+        <item name="android:textColorPrimary">#17261F</item>
+        <item name="android:textColorSecondary">#53695D</item>
+        <item name="android:colorBackgroundFloating">#FFFEFA</item>
+        <item name="android:alertDialogTheme">@style/CalendarLightDialog</item>
+        <item name="android:dialogTheme">@style/CalendarLightDialog</item>
+        <item name="android:datePickerDialogTheme">@style/CalendarLightDialog</item>
+        <item name="android:timePickerDialogTheme">@style/CalendarLightDialog</item>
+        <item name="android:popupMenuStyle">@style/CalendarLightMenu</item>
+        <item name="android:popupBackground">@drawable/tp_popup_light</item>
+    </style>
+    <style name="CalendarLightDialog" parent="@android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorAccent">#21694F</item>
+        <item name="android:textColorPrimary">#17261F</item>
+        <item name="android:textColorSecondary">#53695D</item>
+        <item name="android:colorBackgroundFloating">#FFFEFA</item>
+        <item name="android:windowBackground">@drawable/tp_popup_light</item>
+        <item name="android:windowElevation">12dp</item>
+    </style>
+    <style name="CalendarLightMenu" parent="@android:style/Widget.Material.Light.PopupMenu">
+        <item name="android:popupBackground">@drawable/tp_popup_light</item>
+    </style>
+    <style name="CalendarDark" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:colorAccent">#91D9B9</item>
+        <item name="android:textColorPrimary">#F1F4EF</item>
+        <item name="android:textColorSecondary">#A6B2A8</item>
+        <item name="android:colorBackgroundFloating">#202B29</item>
+        <item name="android:alertDialogTheme">@style/CalendarDarkDialog</item>
+        <item name="android:dialogTheme">@style/CalendarDarkDialog</item>
+        <item name="android:datePickerDialogTheme">@style/CalendarDarkDialog</item>
+        <item name="android:timePickerDialogTheme">@style/CalendarDarkDialog</item>
+        <item name="android:popupMenuStyle">@style/CalendarDarkMenu</item>
+        <item name="android:popupBackground">@drawable/tp_popup_dark</item>
+    </style>
+    <style name="CalendarDarkDialog" parent="@android:style/Theme.Material.Dialog.Alert">
+        <item name="android:colorAccent">#91D9B9</item>
+        <item name="android:textColorPrimary">#F1F4EF</item>
+        <item name="android:textColorSecondary">#A6B2A8</item>
+        <item name="android:colorBackgroundFloating">#202B29</item>
+        <item name="android:windowBackground">@drawable/tp_popup_dark</item>
+        <item name="android:windowElevation">12dp</item>
+    </style>
+    <style name="CalendarDarkMenu" parent="@android:style/Widget.Material.PopupMenu">
+        <item name="android:popupBackground">@drawable/tp_popup_dark</item>
+    </style>
+    <style name="CalendarFrost" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:colorAccent">#345B83</item>
+        <item name="android:textColorPrimary">#173047</item>
+        <item name="android:textColorSecondary">#4A6076</item>
+        <item name="android:colorBackgroundFloating">#EBF1FA</item>
+        <item name="android:alertDialogTheme">@style/CalendarFrostDialog</item>
+        <item name="android:dialogTheme">@style/CalendarFrostDialog</item>
+        <item name="android:datePickerDialogTheme">@style/CalendarFrostDialog</item>
+        <item name="android:timePickerDialogTheme">@style/CalendarFrostDialog</item>
+        <item name="android:popupMenuStyle">@style/CalendarFrostMenu</item>
+        <item name="android:popupBackground">@drawable/tp_popup_frost</item>
+    </style>
+    <style name="CalendarFrostDialog" parent="@android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorAccent">#345B83</item>
+        <item name="android:textColorPrimary">#173047</item>
+        <item name="android:textColorSecondary">#4A6076</item>
+        <item name="android:colorBackgroundFloating">#EBF1FA</item>
+        <item name="android:windowBackground">@drawable/tp_popup_frost</item>
+        <item name="android:windowElevation">12dp</item>
+    </style>
+    <style name="CalendarFrostMenu" parent="@android:style/Widget.Material.Light.PopupMenu">
+        <item name="android:popupBackground">@drawable/tp_popup_frost</item>
+    </style>
+</resources>

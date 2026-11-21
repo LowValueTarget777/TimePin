@@ -1,0 +1,9 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:gravity="center"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:padding="12dp" android:background="@drawable/widget_surface">
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="近期日程" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/widget_ink" />
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" android:gravity="center" android:text="打开 TimePin 加载日程" android:textSize="13sp" android:textColor="@color/widget_muted" />
+</LinearLayout>

@@ -1,0 +1,6 @@
+<resources>
+    <color name="widget_paper">#23302C</color>
+    <color name="widget_ink">#F0F3EB</color>
+    <color name="widget_muted">#ADBDB2</color>
+    <color name="widget_today">#385647</color>
+</resources>

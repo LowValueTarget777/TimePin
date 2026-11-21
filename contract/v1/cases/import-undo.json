@@ -1,0 +1,204 @@
+{
+  "calendar": {
+    "id": "work",
+    "ownerKind": "group",
+    "ownerId": "team",
+    "color": "#336699"
+  },
+  "actors": {
+    "alice": {
+      "id": "alice",
+      "role": "editor"
+    },
+    "bob": {
+      "id": "bob",
+      "role": "contributor"
+    }
+  },
+  "steps": [
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "calendarId": "work",
+        "op": "import.commit",
+        "operationId": "undo-fixture",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {
+                "title": "早班",
+                "span": {
+                  "kind": "date",
+                  "start": "2026-11-03",
+                  "end": "2026-11-04"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "batchId": "batch-1e4029b606739c879ba85d6bcea132cc"
+      }
+    },
+    {
+      "as": "bob",
+      "command": {
+        "v": 1,
+        "calendarId": "work",
+        "op": "import.undo",
+        "batchId": "batch-1e4029b606739c879ba85d6bcea132cc",
+        "operationId": "forbid"
+      },
+      "expect": {
+        "code": "ok",
+        "undo": [
+          {
+            "outcome": "forbidden",
+            "eventId": "imp-41a205d80668ea45d019d7efee9bd854"
+          }
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "calendarId": "work",
+        "op": "import.undoPreview",
+        "batchId": "batch-1e4029b606739c879ba85d6bcea132cc"
+      },
+      "expect": {
+        "code": "ok",
+        "undo": [
+          {
+            "outcome": "removed",
+            "version": 2
+          }
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "calendarId": "work",
+        "op": "event.get",
+        "eventId": "imp-41a205d80668ea45d019d7efee9bd854"
+      },
+      "expect": {
+        "code": "ok",
+        "record": {
+          "deleted": false,
+          "version": 1
+        }
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "calendarId": "work",
+        "op": "import.undo",
+        "operationId": "restore",
+        "batchId": "batch-1e4029b606739c879ba85d6bcea132cc"
+      },
+      "expect": {
+        "code": "ok",
+        "undo": [
+          {
+            "outcome": "removed",
+            "version": 2
+          }
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "calendarId": "work",
+        "op": "import.undo",
+        "operationId": "restore",
+        "batchId": "batch-1e4029b606739c879ba85d6bcea132cc"
+      },
+      "expect": {
+        "code": "ok"
+      },
+      "sameAs": 4
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "calendarId": "work",
+        "op": "event.get",
+        "eventId": "imp-41a205d80668ea45d019d7efee9bd854"
+      },
+      "expect": {
+        "code": "ok",
+        "record": {
+          "deleted": true,
+          "version": 2
+        }
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "calendarId": "work",
+        "op": "import.commit",
+        "operationId": "re-import",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {
+                "title": "早班",
+                "span": {
+                  "kind": "date",
+                  "start": "2026-11-03",
+                  "end": "2026-11-04"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "rows": [
+          {
+            "outcome": "created",
+            "version": 3
+          }
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "calendarId": "work",
+        "op": "import.undo",
+        "operationId": "again",
+        "batchId": "batch-1e4029b606739c879ba85d6bcea132cc"
+      },
+      "expect": {
+        "code": "ok",
+        "undo": [
+          {
+            "outcome": "changed",
+            "version": 3
+          }
+        ]
+      }
+    }
+  ]
+}

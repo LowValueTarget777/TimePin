@@ -1,0 +1,104 @@
+plugins {
+    id 'com.android.application' version '8.5.2'
+    id 'org.jetbrains.kotlin.android' version '1.9.24'
+    id 'com.google.devtools.ksp' version '1.9.24-1.0.20'
+}
+def releaseInfo = new groovy.json.JsonSlurper().parse(file('../../contract/v1/release.json'))
+apply from: 'signing.gradle'
+android {
+    namespace 'org.timepin.app'
+    compileSdk 34
+    // Directly distributed APKs carry their dependency notices in assets/legal.
+    // The optional encrypted Play dependency block changes on each packaging run.
+    dependenciesInfo { includeInApk = false }
+    defaultConfig {
+        applicationId 'org.timepin.app'
+        minSdk 26
+        targetSdk 34
+        versionCode releaseInfo.versionCode.toInteger()
+        versionName releaseInfo.versionName
+        resValue 'string', 'timepin_author', releaseInfo.author
+        resValue 'string', 'launcher_name', 'TimePin'
+        testInstrumentationRunner 'android.test.InstrumentationTestRunner'
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    buildTypes {
+        debug { applicationIdSuffix '.dev' }
+        release { signingConfig signingConfigs.release }
+        community {
+            initWith release
+            applicationIdSuffix '.community'
+            signingConfig signingConfigs.community
+            matchingFallbacks = ['release']
+            resValue 'string', 'launcher_name', 'TimePin · 社区版'
+        }
+        glassPreview {
+            initWith debug
+            applicationIdSuffix '.glass'
+            matchingFallbacks = ['debug']
+            resValue 'string', 'launcher_name', 'TimePin · 雾光'
+        }
+        acceptance {
+            initWith debug
+            applicationIdSuffix '.qa'
+            matchingFallbacks = ['debug']
+        }
+    }
+    testBuildType 'acceptance'
+    kotlinOptions { jvmTarget = '17' }
+    sourceSets { androidTest.assets.srcDir '../../contract/v1/cases' }
+    useLibrary 'android.test.runner'
+    useLibrary 'android.test.base'
+}
+// Launchers keep RemoteViews across package replacement. Link the IDs from the
+// shipped APK even on a clean build, using the package name of this variant.
+androidComponents.onVariants(androidComponents.selector().all()) { variant ->
+    def baseline = file('widget-resource-ids.txt')
+    def linkedIds = layout.buildDirectory.file("generated/widgetIds/${variant.name}/stableIds.txt")
+    def appId = variant.applicationId
+    def writeIds = tasks.register("write${variant.name.capitalize()}WidgetIds") {
+        inputs.file(baseline)
+        inputs.property('applicationId', appId)
+        outputs.file(linkedIds)
+        doLast {
+            def target = linkedIds.get().asFile
+            target.parentFile.mkdirs()
+            target.text = baseline.readLines().collect { "${appId.get()}:${it}" }.join('\n') + '\n'
+        }
+    }
+    variant.androidResources.aaptAdditionalParameters.addAll('--stable-ids', linkedIds.get().asFile.absolutePath)
+    tasks.matching { it.name == "process${variant.name.capitalize()}Resources" }.configureEach {
+        dependsOn(writeIds)
+        inputs.file(linkedIds)
+    }
+}
+
+// Derive the distribution metadata from the same inputs as the installed package.
+android.buildTypes.each { type ->
+    def folder = layout.buildDirectory.dir("generated/distribution/${type.name}")
+    def metadata = [packageName: android.defaultConfig.applicationId + (type.applicationIdSuffix ?: ''),
+                    versionCode: android.defaultConfig.versionCode, versionName: android.defaultConfig.versionName]
+    def generate = tasks.register("write${type.name.capitalize()}ReleaseMetadata") {
+        inputs.properties(metadata)
+        outputs.dir(folder)
+        doLast {
+            def f = folder.get().file('timepin-release.json').asFile
+            f.parentFile.mkdirs()
+            f.text = groovy.json.JsonOutput.toJson(metadata)
+        }
+    }
+    android.sourceSets.getByName(type.name).assets.srcDir(folder)
+    tasks.named('preBuild').configure { dependsOn(generate) }
+}
+dependencies {
+    implementation 'androidx.room:room-runtime:2.6.1'
+    ksp 'androidx.room:room-compiler:2.6.1'
+}
+def wireAssets = tasks.register('wireAssets', Sync) {
+    from('../..') { include 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'licenses/android/**'; into 'legal' }
+    from('../../contract/v1') { include 'schema.json', 'device.json' }
+    from('../../internal/server/web') { include 'holidays/**', 'providers.json' }
+    into(layout.buildDirectory.dir('generated/wire'))
+}
+android.sourceSets.main.assets.srcDir(layout.buildDirectory.dir('generated/wire'))
+tasks.named('preBuild').configure { dependsOn(wireAssets) }

@@ -1,0 +1,24 @@
+services:
+  timepin:
+    build: .
+    network_mode: host
+    command: ["-listen", "${TIMEPIN_LISTEN_HOST:-0.0.0.0}:${TIMEPIN_PORT:-8080}", "-db", "/data/timepin.db"]
+    environment:
+      TIMEPIN_CONSOLE_LAN: ${TIMEPIN_CONSOLE_LAN:-}
+      TIMEPIN_TUNNEL_LISTEN: ${TIMEPIN_TUNNEL_LISTEN:-}
+      TIMEPIN_DISCOVERY: ${TIMEPIN_DISCOVERY:-1}
+      TIMEPIN_API_ONLY: ${TIMEPIN_API_ONLY:-0}
+      TIMEPIN_REGISTRATION: ${TIMEPIN_REGISTRATION:-invite}
+      TIMEPIN_SECURE_COOKIE: ${TIMEPIN_SECURE_COOKIE:-0}
+      TIMEPIN_AI_BASE_URL: ${TIMEPIN_AI_BASE_URL:-}
+      TIMEPIN_AI_MODEL: ${TIMEPIN_AI_MODEL:-deepseek-flash}
+      TIMEPIN_AI_API_KEY: ${TIMEPIN_AI_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+    volumes:
+      - data:/data
+    restart: unless-stopped
+    cpus: 1.0
+    mem_limit: 512m
+
+volumes:
+  data: {}

@@ -1,0 +1,16 @@
+* text=auto
+*.go text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+*.kt text eol=lf
+*.gradle text eol=lf
+*.yml text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf
+LICENSE text eol=lf
+*.jar binary
+*.png binary
+/docs/private export-ignore
+"/docs/工程化检查-*.md" export-ignore
+"/docs/GitHub开源发布检查-*.md" export-ignore

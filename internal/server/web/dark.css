@@ -1,0 +1,52 @@
+:root {
+  color-scheme: dark;
+  --ink: #edf1ed;
+  --muted: #a6ada7;
+  --paper: #121615;
+  --line: #323834;
+  --sand: #1b201e;
+  --wash: #303a34;
+  --green: #88cdb5;
+  --surface: #1b201e;
+  --outside: #151917;
+  --selection: #29332e;
+  --chip-strength: 30%;
+}
+.primary,
+.current-day {
+  background: #286452;
+  color: #fff;
+}
+.primary:hover {
+  background: #377861;
+}
+.switch,
+.paper {
+  background: var(--sand);
+}
+@media (min-width: 621px) {
+  .weekday { background: var(--sand); }
+}
+.event-line {
+  border-color: var(--line);
+}
+input,
+select,
+textarea,
+.paper-sheet {
+  border-color: #46534a;
+}
+.paper-sheet {
+  background: var(--surface);
+}
+.danger,
+dialog .error {
+  color: #f4a69d;
+}
+
+.preference-rows .setting-symbol { background: #243c32; color: #a3d9bd; }
+.preference-rows :is(.people,.sync) { background: #293647; color: #aec8ea; }
+.preference-rows :is(.model,.key) { background: #3b3044; color: #d9bde6; }
+.preference-rows .account { background: #443629; color: #e7c197; }
+
+.send-mode { background: #286452; }

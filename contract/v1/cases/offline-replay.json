@@ -1,0 +1,133 @@
+{
+  "calendar": {"id": "work", "ownerKind": "group", "ownerId": "team", "color": "#336699"},
+  "actors": {
+    "bob": {"id": "bob", "role": "contributor"},
+    "alice": {"id": "alice", "role": "editor"},
+    "limited": {"id": "alice", "role": "contributor"},
+    "revoked": {"id": "alice", "role": "none"}
+  },
+  "steps": [
+    {
+      "as": "bob",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-draft",
+        "eventId": "draft",
+        "event": {"title": "休息日", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}}
+      },
+      "expect": {"code": "ok", "record": {"creatorId": "bob", "version": 1}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "operationId": "offline",
+        "eventId": "draft",
+        "baseVersion": 1,
+        "event": {"title": "确定安排", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}}
+      },
+      "expect": {"code": "ok", "record": {"version": 2}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "operationId": "offline",
+        "eventId": "draft",
+        "baseVersion": 1,
+        "event": {"title": "确定安排", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}}
+      },
+      "expect": {"code": "ok", "record": {"version": 2}},
+      "sameAs": 1
+    },
+    {
+      "as": "limited",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "operationId": "offline",
+        "eventId": "draft",
+        "baseVersion": 1,
+        "event": {"title": "确定安排", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}}
+      },
+      "expect": {"code": "forbidden"}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "operationId": "stale",
+        "eventId": "draft",
+        "baseVersion": 1,
+        "event": {"title": "另一设备", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}}
+      },
+      "expect": {"code": "conflict", "current": {"version": 2, "event": {"title": "确定安排"}}}
+    },
+    {
+      "as": "revoked",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "operationId": "offline",
+        "eventId": "draft",
+        "baseVersion": 1,
+        "event": {"title": "确定安排", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}}
+      },
+      "expect": {"code": "forbidden"}
+    },
+    {
+      "as": "revoked",
+      "command": {"v": 1, "op": "event.get", "calendarId": "work", "eventId": "draft"},
+      "expect": {"code": "forbidden"}
+    },
+    {
+      "as": "bob",
+      "command": {
+        "v": 1,
+        "op": "event.delete",
+        "calendarId": "work",
+        "eventId": "draft",
+        "baseVersion": 2,
+        "operationId": "delete"
+      },
+      "expect": {"code": "ok", "record": {"version": 3, "deleted": true}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-11-01", "end": "2026-11-02", "zone": "Asia/Shanghai"}
+      },
+      "expect": {"code": "ok", "occurrences": []}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "reuse-id",
+        "eventId": "draft",
+        "event": {"title": "休息日", "span": {"kind": "date", "start": "2026-11-01", "end": "2026-11-02"}}
+      },
+      "expect": {"code": "conflict", "current": {"deleted": true, "version": 3}}
+    },
+    {
+      "as": "alice",
+      "command": {"v": 1, "op": "event.get", "calendarId": "other", "eventId": "draft"},
+      "expect": {"code": "not_found"}
+    }
+  ]
+}

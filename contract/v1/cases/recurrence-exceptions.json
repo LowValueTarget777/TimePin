@@ -1,0 +1,130 @@
+{
+  "calendar": {"id": "work", "ownerKind": "group", "ownerId": "team", "color": "#336699"},
+  "actors": {"alice": {"id": "alice", "role": "editor"}},
+  "steps": [
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.create",
+        "calendarId": "work",
+        "operationId": "create-weekly",
+        "eventId": "weekly",
+        "event": {
+          "title": "周会",
+          "span": {
+            "kind": "timed",
+            "start": "2026-11-02T09:00:00+08:00",
+            "end": "2026-11-02T10:00:00+08:00",
+            "zone": "Asia/Shanghai"
+          },
+          "repeat": {"frequency": "weekly", "interval": 1, "until": "2026-11-30"}
+        }
+      },
+      "expect": {"code": "ok", "record": {"version": 1}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "operationId": "reschedule",
+        "eventId": "weekly",
+        "baseVersion": 1,
+        "event": {
+          "title": "周会",
+          "span": {
+            "kind": "timed",
+            "start": "2026-11-02T09:00:00+08:00",
+            "end": "2026-11-02T10:00:00+08:00",
+            "zone": "Asia/Shanghai"
+          },
+          "repeat": {"frequency": "weekly", "interval": 1, "until": "2026-11-30"},
+          "exceptions": [
+            {
+              "on": "2026-11-09",
+              "move": {
+                "kind": "timed",
+                "start": "2026-12-02T11:00:00+08:00",
+                "end": "2026-12-02T12:00:00+08:00",
+                "zone": "Asia/Shanghai"
+              }
+            },
+            {"on": "2026-11-16", "cancel": true}
+          ]
+        }
+      },
+      "expect": {"code": "ok", "record": {"version": 2}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-11-01", "end": "2026-12-01", "zone": "Asia/Shanghai"}
+      },
+      "expect": {
+        "code": "ok",
+        "occurrences": [
+          {"on": "2026-11-02", "version": 2},
+          {"on": "2026-11-23", "version": 2},
+          {"on": "2026-11-30", "version": 2}
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-12-02", "end": "2026-12-03", "zone": "Asia/Shanghai"}
+      },
+      "expect": {
+        "code": "ok",
+        "occurrences": [
+          {
+            "eventId": "weekly",
+            "on": "2026-11-09",
+            "span": {
+              "kind": "timed",
+              "start": "2026-12-02T11:00:00+08:00",
+              "end": "2026-12-02T12:00:00+08:00",
+              "zone": "Asia/Shanghai"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "operationId": "bad-exception",
+        "eventId": "weekly",
+        "baseVersion": 2,
+        "event": {
+          "title": "周会",
+          "span": {
+            "kind": "timed",
+            "start": "2026-11-02T09:00:00+08:00",
+            "end": "2026-11-02T10:00:00+08:00",
+            "zone": "Asia/Shanghai"
+          },
+          "repeat": {"frequency": "weekly", "interval": 1, "until": "2026-11-30"},
+          "exceptions": [{"on": "2026-11-10", "cancel": true}]
+        }
+      },
+      "expect": {"code": "invalid"}
+    },
+    {
+      "as": "alice",
+      "command": {"v": 1, "op": "event.get", "calendarId": "work", "eventId": "weekly"},
+      "expect": {"code": "ok", "record": {"version": 2}}
+    }
+  ]
+}

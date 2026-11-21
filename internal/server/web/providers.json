@@ -1,0 +1,17 @@
+[
+  {
+    "label": "DeepSeek",
+    "url": "https://api.deepseek.com",
+    "name": "deepseek-flash"
+  },
+  {
+    "label": "通义千问",
+    "url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "name": "qwen-plus"
+  },
+  {
+    "label": "Ollama",
+    "url": "http://127.0.0.1:11434/v1",
+    "name": "qwen3:8b"
+  }
+]

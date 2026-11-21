@@ -1,0 +1,274 @@
+{
+  "calendar": {"id": "work", "ownerKind": "group", "ownerId": "team", "color": "#336699"},
+  "actors": {"editor": {"id": "alice", "role": "editor"}},
+  "steps": [
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.preview",
+        "calendarId": "work",
+        "operationId": "p1",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "调班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            }
+          ]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "created", "baseVersion": 0, "version": 1}]}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "other",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "原班次", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "rows": [{"eventId": "imp-41a205d80668ea45d019d7efee9bd854", "outcome": "created", "version": 1}]
+      }
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "p1",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "调班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}},
+              "baseVersion": 0
+            }
+          ]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "conflict", "baseVersion": 1}]}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.preview",
+        "calendarId": "work",
+        "operationId": "p2",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "调班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            }
+          ]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "updated", "baseVersion": 1, "version": 2}]}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "eventId": "imp-41a205d80668ea45d019d7efee9bd854",
+        "operationId": "manual",
+        "baseVersion": 1,
+        "event": {"title": "人工备注", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+      },
+      "expect": {"code": "ok", "record": {"version": 2}}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "p2",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "调班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}},
+              "baseVersion": 1
+            }
+          ]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "conflict", "version": 2}]}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "review",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "调班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}},
+              "baseVersion": 2
+            }
+          ]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "conflict", "version": 2}]}
+    },
+    {
+      "as": "editor",
+      "command": {"v": 1, "op": "event.get", "calendarId": "work", "eventId": "imp-41a205d80668ea45d019d7efee9bd854"},
+      "expect": {"code": "ok", "record": {"version": 2, "event": {"title": "人工备注"}}}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "accept",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "人工备注", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}},
+              "baseVersion": 2,
+              "acceptCurrent": true
+            }
+          ]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "unchanged", "version": 2}]}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "later",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "调班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            }
+          ]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "updated", "version": 3}]}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "ad-hoc",
+        "batch": {
+          "source": "roster",
+          "rows": [{"event": {"title": "原班次", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}}]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "created", "version": 1}]}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "ad-hoc",
+        "batch": {
+          "source": "roster",
+          "rows": [{"event": {"title": "原班次", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}}]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "created", "version": 1}]},
+      "sameAs": 10
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "duplicates",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "原班次", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            },
+            {
+              "externalId": "mon",
+              "event": {"title": "调班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            }
+          ]
+        }
+      },
+      "expect": {"code": "invalid"}
+    },
+    {
+      "as": "editor",
+      "command": {"v": 1, "op": "event.get", "calendarId": "work", "eventId": "imp-41a205d80668ea45d019d7efee9bd854"},
+      "expect": {"code": "ok", "record": {"version": 3, "event": {"title": "调班"}}}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "event.delete",
+        "calendarId": "work",
+        "eventId": "imp-41a205d80668ea45d019d7efee9bd854",
+        "operationId": "remove",
+        "baseVersion": 3
+      },
+      "expect": {"code": "ok", "record": {"deleted": true, "version": 4}}
+    },
+    {
+      "as": "editor",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "revive",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "原班次", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}},
+              "baseVersion": 4,
+              "acceptCurrent": true
+            }
+          ]
+        }
+      },
+      "expect": {"code": "ok", "rows": [{"outcome": "conflict", "version": 4}]}
+    }
+  ]
+}

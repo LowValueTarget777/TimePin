@@ -1,0 +1,325 @@
+{
+  "calendar": {"id": "work", "ownerKind": "group", "ownerId": "team", "color": "#336699"},
+  "actors": {
+    "alice": {"id": "alice", "role": "editor"},
+    "bob": {"id": "bob", "role": "contributor"},
+    "revoked": {"id": "alice", "role": "none"}
+  },
+  "steps": [
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "import.preview",
+        "calendarId": "work",
+        "operationId": "b1",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "白班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            },
+            {
+              "externalId": "tue",
+              "event": {"title": "培训", "span": {"kind": "date", "start": "2026-11-03", "end": "2026-11-04"}}
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "rows": [
+          {"eventId": "imp-41a205d80668ea45d019d7efee9bd854", "version": 1, "outcome": "created"},
+          {"eventId": "imp-08ea6e90140d4bacacf0407da20e12cd", "version": 1, "outcome": "created"}
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-11-01", "end": "2026-11-05", "zone": "Asia/Shanghai"}
+      },
+      "expect": {"code": "ok", "occurrences": []}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "b1",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "白班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            },
+            {
+              "externalId": "tue",
+              "event": {"title": "培训", "span": {"kind": "date", "start": "2026-11-03", "end": "2026-11-04"}}
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "rows": [
+          {"eventId": "imp-41a205d80668ea45d019d7efee9bd854", "version": 1, "outcome": "created"},
+          {"eventId": "imp-08ea6e90140d4bacacf0407da20e12cd", "version": 1, "outcome": "created"}
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "b1",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "白班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            },
+            {
+              "externalId": "tue",
+              "event": {"title": "培训", "span": {"kind": "date", "start": "2026-11-03", "end": "2026-11-04"}}
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "rows": [
+          {"eventId": "imp-41a205d80668ea45d019d7efee9bd854", "version": 1, "outcome": "created"},
+          {"eventId": "imp-08ea6e90140d4bacacf0407da20e12cd", "version": 1, "outcome": "created"}
+        ]
+      },
+      "sameAs": 2
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "b1",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "晚班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            },
+            {
+              "externalId": "tue",
+              "event": {"title": "培训", "span": {"kind": "date", "start": "2026-11-03", "end": "2026-11-04"}}
+            }
+          ]
+        }
+      },
+      "expect": {"code": "operation_reused"}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "b2",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "晚班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            },
+            {
+              "externalId": "tue",
+              "event": {"title": "培训", "span": {"kind": "date", "start": "2026-11-03", "end": "2026-11-04"}}
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "rows": [
+          {"eventId": "imp-41a205d80668ea45d019d7efee9bd854", "version": 2, "outcome": "updated"},
+          {"eventId": "imp-08ea6e90140d4bacacf0407da20e12cd", "version": 1, "outcome": "unchanged"}
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.replace",
+        "calendarId": "work",
+        "operationId": "edit-shift",
+        "eventId": "imp-41a205d80668ea45d019d7efee9bd854",
+        "baseVersion": 2,
+        "event": {"title": "人工调班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+      },
+      "expect": {"code": "ok", "record": {"version": 3}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "import.preview",
+        "calendarId": "work",
+        "operationId": "b3",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "白班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            },
+            {
+              "externalId": "tue",
+              "event": {"title": "培训", "span": {"kind": "date", "start": "2026-11-03", "end": "2026-11-04"}}
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "rows": [
+          {"eventId": "imp-41a205d80668ea45d019d7efee9bd854", "version": 3, "outcome": "conflict"},
+          {"eventId": "imp-08ea6e90140d4bacacf0407da20e12cd", "version": 1, "outcome": "unchanged"}
+        ]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "b3",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "白班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "rows": [{"eventId": "imp-41a205d80668ea45d019d7efee9bd854", "version": 3, "outcome": "conflict"}]
+      }
+    },
+    {
+      "as": "alice",
+      "command": {"v": 1, "op": "event.get", "calendarId": "work", "eventId": "imp-08ea6e90140d4bacacf0407da20e12cd"},
+      "expect": {"code": "ok", "record": {"deleted": false, "version": 1}}
+    },
+    {
+      "as": "alice",
+      "command": {"v": 1, "op": "event.get", "calendarId": "work", "eventId": "imp-41a205d80668ea45d019d7efee9bd854"},
+      "expect": {"code": "ok", "record": {"version": 3, "event": {"title": "人工调班"}}}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "b4",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "wed",
+              "event": {"title": "培训", "span": {"kind": "date", "start": "2026-11-03", "end": "2026-11-04"}}
+            },
+            {
+              "externalId": "bad",
+              "event": {"title": "坏日期", "span": {"kind": "date", "start": "2026-02-29", "end": "2026-03-01"}}
+            }
+          ]
+        }
+      },
+      "expect": {"code": "invalid"}
+    },
+    {
+      "as": "alice",
+      "command": {
+        "v": 1,
+        "op": "event.query",
+        "calendarId": "work",
+        "window": {"start": "2026-11-01", "end": "2026-11-05", "zone": "Asia/Shanghai"}
+      },
+      "expect": {
+        "code": "ok",
+        "occurrences": [
+          {"eventId": "imp-41a205d80668ea45d019d7efee9bd854"},
+          {"eventId": "imp-08ea6e90140d4bacacf0407da20e12cd"}
+        ]
+      }
+    },
+    {
+      "as": "bob",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "b5",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "白班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            },
+            {
+              "externalId": "tue",
+              "event": {"title": "培训", "span": {"kind": "date", "start": "2026-11-03", "end": "2026-11-04"}}
+            }
+          ]
+        }
+      },
+      "expect": {
+        "code": "ok",
+        "rows": [
+          {"eventId": "imp-41a205d80668ea45d019d7efee9bd854", "version": 3, "outcome": "forbidden"},
+          {"eventId": "imp-08ea6e90140d4bacacf0407da20e12cd", "version": 1, "outcome": "forbidden"}
+        ]
+      }
+    },
+    {
+      "as": "revoked",
+      "command": {
+        "v": 1,
+        "op": "import.commit",
+        "calendarId": "work",
+        "operationId": "b1",
+        "batch": {
+          "source": "roster",
+          "rows": [
+            {
+              "externalId": "mon",
+              "event": {"title": "白班", "span": {"kind": "date", "start": "2026-11-02", "end": "2026-11-03"}}
+            },
+            {
+              "externalId": "tue",
+              "event": {"title": "培训", "span": {"kind": "date", "start": "2026-11-03", "end": "2026-11-04"}}
+            }
+          ]
+        }
+      },
+      "expect": {"code": "forbidden"}
+    }
+  ]
+}

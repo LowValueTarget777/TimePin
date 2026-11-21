@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="frost">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#DCE7F4" />
+    <title>TimePin · 共享日历</title>
+    <link rel="icon" href="/mark.svg" />
+    <link rel="stylesheet" href="/app.css" />
+    <link id="dark-palette" rel="stylesheet" href="/dark.css" media="not all" />
+    <link rel="stylesheet" href="/appearance.css" />
+    <script src="/app.js" type="module"></script>
+  </head>
+  <body>
+    <div id="workspace" hidden>
+      <aside class="rail">
+        <div class="brand"><img src="/mark.svg" alt="" />TimePin</div>
+        <button class="primary new-event" id="new-event" aria-label="新建日程">
+          <span aria-hidden="true">＋</span
+          ><span class="new-label"> 新建日程</span>
+        </button>
+        <div class="rail-section" id="calendar-section">
+          <div class="section-head">
+            <h2>我的日历</h2>
+            <button id="new-calendar" title="新建日历" aria-label="新建日历">
+              ＋
+            </button>
+          </div>
+          <div id="calendar-list"></div>
+        </div>
+        <div class="rail-section" id="group-section">
+          <div class="section-head">
+            <h2>我的团组</h2>
+            <button id="new-group" title="新建团组" aria-label="新建团组">
+              ＋
+            </button>
+          </div>
+          <div id="team-list"></div>
+        </div>
+        <div class="rail-bottom">
+          <button id="chat-open" class="chat-tool" aria-haspopup="dialog">日历助手</button>
+          <div class="account-control">
+            <button id="account" type="button" aria-expanded="false" aria-controls="account-menu"></button>
+            <div id="account-menu" class="account-menu" hidden>
+              <button type="button" id="account-profile" aria-label="编辑账号资料"></button>
+              <button type="button" id="account-settings">设置</button>
+              <button type="button" id="account-logout">退出登录</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+      <main class="desk">
+        <section id="settings-page" class="preferences" hidden></section>
+        <header class="desk-head">
+          <div>
+            <span class="eyebrow" id="view-label" hidden></span>
+            <div class="month-heading"><h1 id="month-title"></h1><button id="display-open" aria-label="月历显示设置" title="月历显示设置"></button></div>
+          </div>
+          <div class="toolbar">
+            <button id="mobile-chat" class="chat-tool" aria-label="日历助手" aria-haspopup="dialog" title="日历助手"></button>
+            <button id="prev" aria-label="上个月">‹</button
+            ><button id="today">今天</button
+            ><button id="next" aria-label="下个月">›</button>
+            <div class="switch">
+              <button id="month-view">月历</button
+              ><button id="list-view">日程</button>
+              <button
+                id="mobile-tools"
+                aria-controls="calendar-section group-section"
+                aria-expanded="false"
+              >
+                管理
+              </button>
+            </div>
+          </div>
+        </header>
+        <div id="calendar-body" aria-live="polite"></div>
+        <section id="day-panel">
+          <div class="section-head">
+            <h2 id="day-title"></h2>
+            <button id="day-add" aria-label="为选中日期新增日程">
+              ＋ 新增
+            </button>
+          </div>
+          <div id="day-events"></div>
+        </section>
+      </main>
+    </div>
+    <dialog id="dialog" aria-labelledby="dialog-title">
+      <div class="dialog-head">
+        <h2 id="dialog-title"></h2>
+        <button id="dialog-close" aria-label="关闭">×</button>
+      </div>
+      <div id="dialog-content"></div>
+    </dialog>
+    <p id="notice" role="status" hidden></p>
+  </body>
+</html>

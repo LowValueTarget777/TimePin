@@ -1,0 +1,108 @@
+import java.nio.channels.FileChannel
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
+import java.security.KeyStore
+import java.security.MessageDigest
+
+// The certificate already installed on daily devices, including the original MI 8.
+def officialCert = '0509439743daa2180ebeca26380374b42e07d7ca3d4b3b67b3a450f762c24bb5'
+def qaFile = new File(System.getProperty('user.home'), '.android/timepin-qa/signing.p12')
+def releasePath = System.getenv('TIMEPIN_RELEASE_STORE')
+def releaseAlias = System.getenv('TIMEPIN_RELEASE_ALIAS') ?: 'timepin-release'
+def releasePassword = System.getenv('TIMEPIN_RELEASE_PASSWORD')
+def releaseKeyPassword = System.getenv('TIMEPIN_RELEASE_KEY_PASSWORD') ?: releasePassword
+def communityPath = System.getenv('TIMEPIN_COMMUNITY_STORE')
+def communityPassword = System.getenv('TIMEPIN_COMMUNITY_PASSWORD')
+def communityAlias = System.getenv('TIMEPIN_COMMUNITY_ALIAS') ?: 'timepin-community'
+def qaAlias = 'timepin-qa'
+def qaPassword = 'android'
+
+android.signingConfigs {
+    debug {
+        storeFile qaFile
+        storeType 'PKCS12'
+        storePassword qaPassword
+        keyAlias qaAlias
+        keyPassword qaPassword
+    }
+    release {
+        if (releasePath) storeFile file(releasePath)
+        storeType 'PKCS12'
+        storePassword releasePassword
+        keyAlias releaseAlias
+        keyPassword releaseKeyPassword
+    }
+    community {
+        if (communityPath) storeFile file(communityPath)
+        storeType 'PKCS12'
+        storePassword communityPassword
+        keyAlias communityAlias
+        keyPassword System.getenv('TIMEPIN_COMMUNITY_KEY_PASSWORD') ?: communityPassword
+    }
+}
+
+def fingerprint = { File path, String password, String alias ->
+    def keys = KeyStore.getInstance('PKCS12')
+    path.withInputStream { keys.load(it, password.toCharArray()) }
+    if (!keys.isKeyEntry(alias)) throw new GradleException("Missing signing key: " + alias)
+    MessageDigest.getInstance('SHA-256').digest(keys.getCertificate(alias).encoded).encodeHex().toString()
+}
+
+def prepareQa = tasks.register('prepareQaSigning') {
+    doLast {
+        Files.createDirectories(qaFile.parentFile.toPath())
+        def lockFile = new File(qaFile.parentFile, 'generate.lock').toPath()
+        FileChannel.open(lockFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE).withCloseable { channel ->
+            channel.lock().withCloseable {
+                if (!qaFile.exists()) {
+                    def temp = Files.createTempDirectory(qaFile.parentFile.toPath(), 'new-')
+                    def key = temp.resolve('qa.p12')
+                    try {
+                        def windows = System.getProperty('os.name').startsWith('Windows')
+                        def tool = new File(System.getProperty('java.home'), windows ? 'bin/keytool.exe' : 'bin/keytool')
+                        project.exec {
+                            commandLine tool, '-genkeypair', '-noprompt', '-storetype', 'PKCS12',
+                                '-keystore', key.toString(), '-alias', qaAlias, '-storepass', qaPassword,
+                                '-keypass', qaPassword, '-keyalg', 'RSA', '-keysize', '3072',
+                                '-validity', '10000', '-dname', 'CN=TimePin QA'
+                        }
+                        Files.move(key, qaFile.toPath(), java.nio.file.StandardCopyOption.ATOMIC_MOVE)
+                    } finally {
+                        Files.deleteIfExists(key)
+                        Files.deleteIfExists(temp)
+                    }
+                }
+            }
+        }
+        if (fingerprint(qaFile, qaPassword, qaAlias) == officialCert)
+            throw new GradleException('QA requires a certificate separate from the daily app')
+    }
+}
+def checkRelease = tasks.register('checkReleaseSigning') {
+    doLast {
+        if (!releasePath || !releasePassword || !file(releasePath).isFile())
+            throw new GradleException('Provide the dedicated release keystore via TIMEPIN_RELEASE_STORE and TIMEPIN_RELEASE_PASSWORD (docs/android.md)')
+        def path = file(releasePath).canonicalFile
+        if (path.toPath().startsWith(rootProject.projectDir.parentFile.canonicalFile.toPath()) || path == qaFile.canonicalFile)
+            throw new GradleException('Keep the dedicated release keystore outside the checkout and separate from QA')
+        if (fingerprint(path, releasePassword, releaseAlias) != officialCert)
+            throw new GradleException('Release certificate does not match installed TimePin devices')
+    }
+}
+def checkCommunity = tasks.register('checkCommunitySigning') {
+    doLast {
+        if (!communityPath || !communityPassword || !file(communityPath).isFile())
+            throw new GradleException('Set TIMEPIN_COMMUNITY_STORE and TIMEPIN_COMMUNITY_PASSWORD (docs/android.md)')
+        def path = file(communityPath).canonicalFile
+        if (path.toPath().startsWith(rootProject.projectDir.parentFile.canonicalFile.toPath()) || path == qaFile.canonicalFile)
+            throw new GradleException('Keep the community keystore outside the checkout and separate from QA')
+        def cert = fingerprint(path, communityPassword, communityAlias)
+        if (cert == officialCert || (qaFile.exists() && cert == fingerprint(qaFile, qaPassword, qaAlias)))
+            throw new GradleException('Use a dedicated community signing certificate')
+    }
+}
+tasks.configureEach {
+    if (name == 'preReleaseBuild' || name == 'validateSigningRelease') dependsOn(checkRelease)
+    if (name == 'preCommunityBuild' || name == 'validateSigningCommunity') dependsOn(checkCommunity)
+    if (name.startsWith('validateSigning') && name != 'validateSigningRelease' && name != 'validateSigningCommunity') dependsOn(prepareQa)
+}

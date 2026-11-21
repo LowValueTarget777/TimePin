@@ -1,0 +1,87 @@
+:root[data-theme="frost"] {
+  color-scheme: light;
+  --ink: #173047;
+  --muted: #496177;
+  --paper: #dce7f4;
+  --sand: #eff5fbd9;
+  --wash: #e0ebf7;
+  --surface: #f9fcfff0;
+  --line: #a8bdcf9c;
+  --outside: #e8eff6cc;
+  --selection: #e1edf9;
+  --green: #345b83;
+  --shadow: 0 12px 40px #223e5826;
+}
+[data-theme="frost"] {
+  --back-art: radial-gradient(ellipse at 16% 18%, #e7f4ff 0%, transparent 52%),
+    radial-gradient(ellipse at 92% 82%, #bbc7ea, transparent 55%),
+    linear-gradient(132deg, #a7c7db, #d1e5e2 58%, #ebe1f1);
+}
+:root[data-theme="frost"] body, .theme-preview[data-theme="frost"] {
+  background-color: var(--back-color, #dce7f4);
+  background-size: cover;
+  background-position: center;
+}
+:root[data-theme="frost"] body { min-height: 100vh; background-attachment: fixed; }
+:root[data-theme="frost"][data-backdrop="frost"] body,
+.theme-preview[data-theme="frost"][data-backdrop="frost"] { background-image: var(--back-art); }
+:root[data-theme="frost"][data-backdrop="photo"] body,
+.theme-preview[data-theme="frost"][data-backdrop="photo"] { background-image: var(--back-photo); }
+:root[data-theme="frost"] .desk { background: #f1f7ffad; }
+:root[data-theme="frost"] :is(.rail, .paper, .login-pane, .weekday, .switch) { background: var(--sand); }
+:root[data-theme="frost"] :is(.month-grid, #day-panel, .preference-rows, .account-menu, .send-options, .paper-sheet),
+:root[data-theme="frost"] #workspace ~ dialog {
+  background: linear-gradient(145deg, #fffffff5, #eff6ffdb);
+  border-color: #bdd0df;
+  box-shadow: inset 0 1px 0 #fff, 0 4px 18px #26415c0d;
+}
+:root[data-theme="frost"] :is(.account-menu, .send-options),
+:root[data-theme="frost"] #workspace ~ dialog { box-shadow: var(--shadow); }
+@supports (backdrop-filter: blur(12px)) {
+  :root[data-theme="frost"] :is(.rail, .preference-rows, .account-menu, .send-options),
+  :root[data-theme="frost"] #workspace ~ dialog { backdrop-filter: blur(12px); }
+}
+:root[data-theme="frost"] dialog::backdrop { background: #19334d59; }
+:root[data-theme="frost"] .cell.selected { box-shadow: inset 0 0 0 2px #698bab; }
+:root[data-theme="frost"] :is(.primary, .send-mode):hover { background: #24486c; }
+:root[data-theme="frost"] #chat-open:hover { background: var(--wash); }
+:root[data-theme="frost"] input:not([type="range"]), :root[data-theme="frost"] :is(select, textarea) { border-color: var(--line); }
+:root[data-theme="frost"] { accent-color: var(--green); }
+:root[data-theme="frost"] :focus-visible { outline-color: var(--green); }
+:root[data-theme="frost"] .settings-back { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 5px 12px; }
+.appearance-editor { gap: 12px; }
+.theme-preview {
+  padding: 16px; border-radius: 16px; border: 1px solid var(--line);
+  background: #f4f4ee; color: #173047;
+}
+.preview-pane {
+  width: fit-content; display: grid; padding: 8px 18px; border-radius: 13px;
+  background: #fffffff0; border: 1px solid #ffffffd9;
+}
+.preview-pane strong { font-size: 18px; }
+.preview-pane span { font-size: 12px; }
+.theme-preview[data-theme="frost"] .preview-pane { background: linear-gradient(135deg, #fffffff0, #f2f7ffe0); }
+.theme-preview[data-theme="dark"] { background: #131b1a; color: #f1f4ef; }
+.theme-preview[data-theme="dark"] .preview-pane { background: #202b29; border-color: #42554c; }
+@media (prefers-color-scheme: dark) {
+  .theme-preview[data-theme="system"] { background: #131b1a; color: #f1f4ef; }
+  .theme-preview[data-theme="system"] .preview-pane { background: #202b29; border-color: #42554c; }
+}
+.theme-colors { display: grid; gap: 6px; }
+.theme-colors .color-options { gap: 9px; margin: 0 0 5px; }
+.appearance-editor .channel {
+  display: grid; grid-template-columns: 3em minmax(0, 1fr); align-items: center; gap: 8px;
+  color: var(--muted);
+}
+.channel input { height: 28px; padding: 0; margin: 0; border: 0; cursor: pointer; }
+.channel-0 { accent-color: #a54c58; }
+.channel-1 { accent-color: #37806a; }
+.channel-2 { accent-color: #4877ac; }
+.color-value { display: grid; grid-template-columns: 55px minmax(0, 1fr); align-items: end; gap: 12px; }
+.color-value input[aria-invalid="true"] { outline: 2px solid #ae4a48; }
+.appearance-actions { display: flex; justify-content: flex-end; gap: 8px; }
+input::file-selector-button {
+  font: inherit; background: var(--wash); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 8px; padding: 4px 10px; margin-inline-end: 8px; cursor: pointer;
+}
+:root[data-theme="frost"] #notice { background: #244760; }

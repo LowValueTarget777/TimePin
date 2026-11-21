@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 735" font-family="Microsoft YaHei,Noto Sans CJK SC,sans-serif" role="img" aria-labelledby="title desc">
+<title id="title">TimePin · 应用关系</title><desc id="desc">Web 和安卓是平级客户端。只有接入服务器的日历参与共享。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" markerWidth="7" markerHeight="7" refX="9" refY="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#51867d"/></marker></defs>
+<rect x="0" y="0" width="1200" height="735" rx="15" fill="#f5f8f3"/>
+<text x="36" y="55" font-size="34" fill="#173e36" font-weight="700">TimePin · 应用关系</text>
+<text x="38" y="91" font-size="18" fill="#203c38" font-weight="400">Web 和安卓是平级客户端。只有接入服务器的日历参与共享。</text>
+<rect x="36" y="124" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="154" font-size="20" fill="#194d42" font-weight="650">安卓单机</text>
+<text x="53" y="179" font-size="15" fill="#203c38" font-weight="400">日历、系统导入、组件配置与设备助手</text>
+<rect x="821" y="124" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="154" font-size="20" fill="#334f70" font-weight="650">手机 Room 数据库</text>
+<text x="837" y="179" font-size="15" fill="#203c38" font-weight="400">日历、离线操作和组件选择</text>
+<text x="391" y="153" font-size="16" fill="#203c38" font-weight="400">本机读写 · 无需登录</text>
+<path d="M382 171H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="213" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="243" font-size="20" fill="#194d42" font-weight="650">安卓连接服务器</text>
+<text x="53" y="268" font-size="15" fill="#203c38" font-weight="400">发现或手填地址 · 连接后登录或注册</text>
+<rect x="821" y="213" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="243" font-size="20" fill="#334f70" font-weight="650">NAS 日历服务器</text>
+<text x="837" y="268" font-size="15" fill="#203c38" font-weight="400">登录后自动上传与下载日历</text>
+<text x="391" y="242" font-size="16" fill="#203c38" font-weight="400">登录后自动双向同步账号日历</text>
+<path d="M382 260H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="302" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="332" font-size="20" fill="#194d42" font-weight="650">个人 Web 日历</text>
+<text x="53" y="357" font-size="15" fill="#203c38" font-weight="400">日历对话与账号管理对话</text>
+<rect x="821" y="302" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="332" font-size="20" fill="#334f70" font-weight="650">NAS 日历服务器</text>
+<text x="837" y="357" font-size="15" fill="#203c38" font-weight="400">个人日历与团组日历的业务 API</text>
+<text x="391" y="331" font-size="16" fill="#203c38" font-weight="400">按账号和当前权限读写</text>
+<path d="M382 349H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="391" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="421" font-size="20" fill="#194d42" font-weight="650">受邀成员与访客</text>
+<text x="53" y="446" font-size="15" fill="#203c38" font-weight="400">团组邀请、日历授权、公开只读链接</text>
+<rect x="821" y="391" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="421" font-size="20" fill="#334f70" font-weight="650">NAS 权限服务</text>
+<text x="837" y="446" font-size="15" fill="#203c38" font-weight="400">成员角色与可撤销分享</text>
+<text x="391" y="420" font-size="16" fill="#203c38" font-weight="400">请求已授权的共享视图</text>
+<path d="M382 438H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="480" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="510" font-size="20" fill="#194d42" font-weight="650">CLI、MCP 与机器人</text>
+<text x="53" y="535" font-size="15" fill="#203c38" font-weight="400">令牌可选单本或本人全部日历</text>
+<rect x="821" y="480" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="510" font-size="20" fill="#334f70" font-weight="650">同一日历服务 API</text>
+<text x="837" y="535" font-size="15" fill="#203c38" font-weight="400">校验身份、操作编号及事件版本</text>
+<text x="391" y="509" font-size="16" fill="#203c38" font-weight="400">查询、批量导入和撤销</text>
+<path d="M382 527H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<rect x="36" y="569" width="328" height="72" rx="15" fill="#e4eee6"/>
+<text x="53" y="599" font-size="20" fill="#194d42" font-weight="650">实例管理员</text>
+<text x="53" y="624" font-size="15" fill="#203c38" font-weight="400">后台账号可限定局域网直连 /admin</text>
+<rect x="821" y="569" width="343" height="72" rx="15" fill="#e2eaf3"/>
+<text x="837" y="599" font-size="20" fill="#334f70" font-weight="650">实例管理 API</text>
+<text x="837" y="624" font-size="15" fill="#203c38" font-weight="400">建号、改名与密码、注册及模型授权</text>
+<text x="391" y="598" font-size="16" fill="#203c38" font-weight="400">后台专用会话 · 授权、备份与安卓版本发布</text>
+<path d="M382 616H799" fill="none" stroke="#51867d" stroke-width="2" marker-end="url(#arrow)" />
+<text x="39" y="694" font-size="16" fill="#203c38" font-weight="400">Web 与安卓可选择个人或实例模型；账号操作由服务器确认，设备操作在手机确认并执行。</text>
+ </svg>
